@@ -3,21 +3,19 @@ import { readable, writable } from "svelte/store";
 import Home from "../routes/Home.svelte";
 import AddFunds from "../routes/AddFunds.svelte";
 import Earn from "../routes/Earn.svelte";
-import SignIn from "../routes/SignIn.svelte";
 
 export function createRoutingCtx() {
     
     const routes: { [key: string]: ComponentType } = {
         home: Home,
         addfunds: AddFunds,
-        earn: Earn,
-        signin: SignIn
+        earn: Earn
     }
 
     const ctx = {
         history: ['home'] as string[],
 
-        route: writable<string>('signin'),
+        route: writable<string>('home'),
 
         routeComponent: readable<ComponentType>(undefined, (set) => {
             const unsub = ctx.route.subscribe(r => {

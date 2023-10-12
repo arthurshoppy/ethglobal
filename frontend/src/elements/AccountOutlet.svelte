@@ -2,6 +2,9 @@
   import { getContext } from "svelte";
   import type { createRoutingCtx } from "../contexts/routing";
 
+  const auth = getContext<ReturnType<typeof createAuthCtx>>("auth");
+  const user = auth.user;
+
   const routing = getContext<ReturnType<typeof createRoutingCtx>>("routing");
   const currRoute = routing.route;
 
@@ -10,6 +13,7 @@
   import dashboard from "../assets/dashboard.png";
   import transactions from "../assets/transactions.png";
   import settings from "../assets/settings.png";
+  import type { createAuthCtx } from "../contexts/auth";
 
   let expanded = false;
 
@@ -26,8 +30,8 @@
 </script>
 
 <div>
-  <button class="rounded-full overflow-hidden cursor-pointer bg-white p-2 shadow" on:click={() => (expanded = !expanded)}>
-    <img class="w-4 h-4" alt="profile" src={profile} />
+  <button class="rounded-full overflow-hidden cursor-pointer bg-white shadow" on:click={() => (expanded = !expanded)}>
+    <img class="w-8 h-8" alt="profile" src={$user?.user_metadata?.picture || profile} />
   </button>
 
   <div
@@ -44,5 +48,6 @@
         <div class="text-gray-600">{item.title}</div>
       </button>
     {/each}
+    <button on:click={auth.signOut}>sign out</button>
   </div>
 </div>
