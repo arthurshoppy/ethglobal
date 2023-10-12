@@ -1,15 +1,21 @@
 import type { ComponentType } from "svelte";
 import { readable, writable } from "svelte/store";
+
 import Home from "../routes/Home.svelte";
 import AddFunds from "../routes/AddFunds.svelte";
 import Earn from "../routes/Earn.svelte";
+import Transactions from "../routes/Transactions.svelte";
+import Settings from "../routes/Settings.svelte";
 
 export function createRoutingCtx() {
     
     const routes: { [key: string]: ComponentType } = {
         home: Home,
         addfunds: AddFunds,
-        earn: Earn
+        earn: Earn,
+
+        transactions: Transactions,
+        settings: Settings
     }
 
     const ctx = {
@@ -25,6 +31,10 @@ export function createRoutingCtx() {
             return () => unsub();
         }),
 
+        get cangoback() {
+            return ctx.history.length > 1
+        },
+
         goto(route: string, asRoot = false) {
             ctx.route.set(route)
             if (asRoot) ctx.history = []
@@ -33,14 +43,10 @@ export function createRoutingCtx() {
 
         goback() {
             ctx.history.pop()
-            if (ctx.cangoback) {
+            if (ctx.history.length > 0) {
                 ctx.route.set(ctx.history[ctx.history.length - 1])
             }
         },
-
-        get cangoback() {
-            return ctx.history.length > 0
-        }
     }
 
     return ctx
