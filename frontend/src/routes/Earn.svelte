@@ -84,7 +84,9 @@
 
       <Button on:click={routing.goback}>No, go back</Button>
 
-      <Button class="text-sky-500 hover:text-white bg-sky-100" on:click={setNoticed}>Yes, continue</Button>
+      <Button class="!text-sky-500 hover:!text-white !bg-sky-100 hover:!bg-sky-600 active:!bg-sky-700" on:click={setNoticed}
+        >Yes, continue</Button
+      >
     </div>
   {/if}
 </div>

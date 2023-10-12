@@ -44,7 +44,5 @@ export function createAuthCtx() {
       }
     }
 
-    ctx.user.subscribe(u => console.log("User", u))
-
     return ctx
 }
