@@ -1,12 +1,52 @@
-// https://supabase.com/docs/reference/javascript/installing
-import { createClient } from '@supabase/supabase-js'
+import { readable } from "svelte/store";
 
-// Create a single supabase client for interacting with your database
-const supabase = createClient(
-  "https://cjcstovfmmzswixooike.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqY3N0b3ZmbW16c3dpeG9vaWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTY5NDg1MzYsImV4cCI6MjAxMjUyNDUzNn0.1O5HeDtfvcJ-oFJVXKF_5LAu4Icb2fRikcBd38H0uTk"
-)
+export function createFauxBackendCtx() {
 
-const { data, error } = await supabase.functions.invoke('hello-world', {
-  body: { name: 'Functions' },
-})
+    // let walletAdaptor
+    // let instance
+
+    const ctx = {
+      
+      async createAccount() {
+        // walletAdaptor = new ConnectAdaptor({
+        //   chainId: SupportedNetworks.MUMBAI,
+        //   apiKey,
+        // });
+        
+        // instance = new ComethWallet({
+        //   authAdapter: walletAdaptor,
+        //   apiKey,
+        // });
+
+        // const walletAddress = await instance.getAddress()
+        // localStorage.setItem("walletAddress", walletAddress)
+      },
+
+      async initializeAccount() {
+        // instance = new ComethWallet({
+        //   authAdapter: walletAdaptor,
+        //   apiKey,
+        // });
+
+        // await instance.connect(localStorageAddress);
+      },
+
+      async createUser() {
+        
+        
+
+      },
+
+      async stakeSDAI() {
+
+      }
+
+    }
+
+    // const localStorageAddress = window.localStorage.getItem("walletAddress");
+    // if (localStorageAddress) {
+    //   ctx.initializeAccount()
+    // }
+
+    return ctx
+}

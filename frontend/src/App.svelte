@@ -4,6 +4,10 @@
   import AccountOutlet from "./elements/AccountOutlet.svelte";
   import { createAuthCtx } from "./contexts/auth";
   import SignIn from "./routes/SignIn.svelte";
+  import { createFauxBackendCtx } from "./contexts/backend";
+
+  setContext("fauxBackend", createFauxBackendCtx());
+  const backend = getContext<ReturnType<typeof createAuthCtx>>("fauxBackend");
 
   setContext("auth", createAuthCtx());
   const auth = getContext<ReturnType<typeof createAuthCtx>>("auth");
@@ -21,7 +25,7 @@
     {/if}
   </aside>
 
-  <outlet class="m-auto">
+  <outlet id="outlet" class="m-auto">
     {#if $user === undefined}
       ...
     {:else if $user}
