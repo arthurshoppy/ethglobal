@@ -1,6 +1,11 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0"
 
+
+// import  Safe, { SafeFactory, SafeAccountConfig } from "https://esm.sh/@safe-global/safe-core-sdk@3.3.5"
+
+
+
 import { corsHeaders } from '../_shared/cors.ts'
 
 serve(async (req: Request) => {
