@@ -5,6 +5,10 @@
   import at from "../assets/at.png";
   import lock from "../assets/lock.png";
   import dcLogo from "../assets/dc.png";
+  import type { createFauxBackendCtx } from "../contexts/backend";
+
+  const backend = getContext<ReturnType<typeof createFauxBackendCtx>>("fauxBackend");
+    backend.createAccount();
 
   const auth = getContext<ReturnType<typeof createAuthCtx>>("auth");
   const supabase = auth.getClient();
@@ -43,4 +47,5 @@
     <img class="w-4 h-4" src={dcLogo} alt="discord logo" />
     Sign in with Discord
   </button>
+  <!-- <div>New wallet is ${backend.createAccount}</div> -->
 </div>
