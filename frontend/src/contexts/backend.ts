@@ -12,7 +12,7 @@ export function createFauxBackendCtx() {
 
     let walletAdaptor;
     let walletInstance;
-    const apiKey = "f4bbeddb-aa47-4e41-8f34-b7f23d1c7a6b";
+    const apiKey = 'f4bbeddb-aa47-4e41-8f34-b7f23d1c7a6b';
     const ctx = {
       
       async createAccount() {
