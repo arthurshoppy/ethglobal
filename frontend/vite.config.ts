@@ -11,7 +11,7 @@ export default defineConfig({
 			include: ['stream'],
 			
 			globals: {
-        Buffer: false, // can also be 'build', 'dev', or false
+        Buffer: true, // can also be 'build', 'dev', or false
         global: true,
         process: true
       },
