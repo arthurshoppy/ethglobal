@@ -10,6 +10,7 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
+    "@cometh/connect-sdk": "^1.1.1",
     "@supabase/supabase-js": "^2.38.0",
     "@sveltejs/vite-plugin-svelte": "^2.4.6",
     "@tsconfig/svelte": "^5.0.2",
@@ -20,10 +21,7 @@
     "tailwindcss": "^3.3.3",
     "tslib": "^2.6.0",
     "typescript": "^5.0.2",
-    "vite": "^4.4.11"
-  },
-  "dependencies": {
-    "@cometh/connect-sdk": "^1.1.1",
-    "dotenv": "^16.3.1"
+    "vite": "^4.4.11",
+    "vite-plugin-node-polyfills": "^0.15.0"
   }
 }

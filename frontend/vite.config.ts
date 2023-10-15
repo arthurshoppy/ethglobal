@@ -1,12 +1,24 @@
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
+
 // https://vitejs.dev/config/
+// https://vitejs.dev/guide/env-and-mode.html
 export default defineConfig({
-  plugins: [svelte()],
-  define: {
-    // By default, Vite doesn't include shims for NodeJS/
-    // necessary for segment analytics lib to work
-    global: {},
-  },
+  plugins: [
+		nodePolyfills({
+			include: ['stream'],
+			
+			globals: {
+        Buffer: false, // can also be 'build', 'dev', or false
+        global: true,
+        process: true
+      },
+
+			protocolImports: false
+		}),
+
+		svelte()
+	]
 })
