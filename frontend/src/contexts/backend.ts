@@ -1,9 +1,9 @@
+import { writable } from 'svelte/store';
 import {
   ComethWallet,
   ConnectAdaptor,
   SupportedNetworks
 } from '@cometh/connect-sdk';
-
 
 export function createFauxBackendCtx() {
 
@@ -11,7 +11,9 @@ export function createFauxBackendCtx() {
   let walletInstance: ComethWallet;
 
   const ctx = {
-    
+  
+		address: writable<string | null>(null),
+
 		async createAccount() {
 			
 			walletAdaptor = new ConnectAdaptor({

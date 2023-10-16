@@ -1,53 +1,80 @@
 <script lang="ts">
-  import { getContext } from "svelte";
-  import type { createRoutingCtx } from "../contexts/routing";
+	import { getContext } from "svelte";
+	import type { createFauxBackendCtx } from "../contexts/backend";
+	import type { createRoutingCtx } from "../contexts/routing";
 
-  const auth = getContext<ReturnType<typeof createAuthCtx>>("auth");
-  const user = auth.user;
+	import dashboard from "../assets/dashboard.png";
+	import transactions from "../assets/transactions.png";
+	import settings from "../assets/settings.png";
+	import logout from "../assets/logout.png";
+	import icon from "../assets/icon.png";
 
-  const routing = getContext<ReturnType<typeof createRoutingCtx>>("routing");
-  const currRoute = routing.route;
+	const backend =
+		getContext<ReturnType<typeof createFauxBackendCtx>>("fauxBackend");
 
-  import profile from "../assets/profile.png";
+	const routing = getContext<ReturnType<typeof createRoutingCtx>>("routing");
+	const currRoute = routing.route;
 
-  import dashboard from "../assets/dashboard.png";
-  import transactions from "../assets/transactions.png";
-  import settings from "../assets/settings.png";
-  import type { createAuthCtx } from "../contexts/auth";
+	let expanded = false;
 
-  let expanded = false;
+	const menu = [
+		{ icon: dashboard, title: "Dashboard", route: "home" },
+		{ icon: transactions, title: "Transactions", route: "transactions" },
+		{ icon: settings, title: "Settings", route: "settings" },
+	];
 
-  const menu = [
-    { icon: dashboard, title: "Dashboard", route: "home" },
-    { icon: transactions, title: "Transactions", route: "transactions" },
-    { icon: settings, title: "Settings", route: "settings" },
-  ];
+	function goto(route: string) {
+		expanded = false;
+		routing.goto(route, true);
+	}
 
-  function goto(route: string) {
-    expanded = false;
-    routing.goto(route, true);
-  }
+	async function signOut() {
+		// TODO: use deleteAccount? here
+		backend.address.set(null);
+
+		routing.goto("signin", true);
+	}
 </script>
 
-<div>
-  <button class="rounded-full overflow-hidden cursor-pointer bg-white shadow" on:click={() => (expanded = !expanded)}>
-    <img class="w-8 h-8" alt="profile" src={$user?.user_metadata?.picture || profile} />
-  </button>
+<aside class="absolute top-4 right-4">
+	<button
+		class="rounded-full overflow-hidden cursor-pointer bg-white border-4 border-white right-0 top-0 absolute"
+		on:click={() => (expanded = !expanded)}
+	>
+		<img class="w-6 h-6" alt="profile" src={icon} />
+	</button>
 
-  <div
-    class="mt-2 flex flex-col py-2 bg-white rounded-xl shadow transition-all
-    {!expanded && 'pointer-events-none'} {!expanded && 'opacity-0'} {expanded ? 'translate-y-0' : '-translate-y-2'}"
-  >
-    {#each menu as item}
-      <button
-        class="flex py-1 px-4
-        {item.route == $currRoute && 'bg-gray-100'} hover:bg-gray-100 active:bg-gray-200"
-        on:click={() => goto(item.route)}
-      >
-        <img class="h-4 w-4 self-center mr-1" src={item.icon} alt={item.title} />
-        <div class="text-gray-600">{item.title}</div>
-      </button>
-    {/each}
-    <button on:click={auth.signOut}>sign out</button>
-  </div>
-</div>
+	<div
+		class="mt-10 flex flex-col py-2 bg-white rounded-xl transition-all
+    {!expanded && 'pointer-events-none'} {!expanded && 'opacity-0'} {expanded
+			? 'translate-y-0'
+			: '-translate-y-2'}"
+	>
+		{#each menu as item}
+			<button
+				class="flex py-1 px-4
+        {item.route == $currRoute &&
+					'bg-gray-100'} hover:bg-gray-100 active:bg-gray-200"
+				on:click={() => goto(item.route)}
+			>
+				<img
+					class="h-4 w-4 self-center mr-2.5"
+					src={item.icon}
+					alt={item.title}
+				/>
+				<div class="text-gray-600">{item.title}</div>
+			</button>
+		{/each}
+
+		<div class="h-px bg-gray-200 mx-4 my-1" />
+
+		<button class="flex hover:bg-gray-100 py-0.5" on:click={signOut}>
+			<img
+				class="h-4 w-4 self-center ml-4 mr-2.5"
+				src={logout}
+				alt="sign out icon"
+			/>
+			Sign out
+		</button>
+	</div>
+</aside>
