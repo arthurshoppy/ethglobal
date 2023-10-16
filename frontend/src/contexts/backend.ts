@@ -17,7 +17,7 @@ export function createFauxBackendCtx() {
 		async createAccount() {
 			
 			walletAdaptor = new ConnectAdaptor({
-				chainId: SupportedNetworks.MUMBAI,
+				chainId: SupportedNetworks.CHIADO,
 				apiKey: import.meta.env.VITE_COMMETH,
 			});
 			
@@ -25,8 +25,7 @@ export function createFauxBackendCtx() {
 				authAdapter: walletAdaptor,
 				apiKey: import.meta.env.VITE_COMMETH,
 			});
-			
-    },
+		},
 
     //   async initializeAccount() {
 
@@ -36,25 +35,39 @@ export function createFauxBackendCtx() {
     //   async stakeSDAI() {
 
     //   }
-    // async makeTransaction() {
-        
-    // },
+
+    async makeSwapAndDeposit() {
+      const txValues = [{
+        to: "targetAddress2", //make a swap to DAI
+        value: "0x00", //User Input
+        data: "0x",
+      }, {
+        to: "targetAddress2", //deposit DAI for sDAI
+        value: "0x00", //User Input
+        data: "0x", //
+      }];
+           
+      
+      const txPending = await walletInstance.sendBatchTransactions(txValues);
+      // await txPending.wait();
+    },
   
     // if (localStorageAddress) {
     //   ctx.createAccount()
     // }
 
-	}
+    async createWallet() {
+      const localStorageAddress = window.localStorage.getItem("walletAddress");
 
-  // const localStorageAddress = window.localStorage.getItem("walletAddress");
-
-  // if (localStorageAddress) {
-  //   await walletInstance.connect(localStorageAddress);
-  // } else {
-  //   await walletInstance.connect();
-  //   const walletAddress = await walletInstance.getAddress();
-  //   window.localStorage.setItem("walletAddress", walletAddress)
-  // }
+        if (localStorageAddress) {
+        await walletInstance.connect(localStorageAddress);
+        } else {
+        await walletInstance.connect();
+        const walletAddress = await walletInstance.getAddress();
+        window.localStorage.setItem("walletAddress", walletAddress)
+        }
+      },
+    }
 
   return ctx
 }
