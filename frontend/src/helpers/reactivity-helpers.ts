@@ -37,3 +37,15 @@ export function consistentStore<T, K extends Readable<T> | Writable<T>>(store: K
 	}
 	return obj
 }
+
+/**
+ * Makes a store refreshable, meaning it adds a "refresh" method which signals the store to refresh itself
+ */
+export function refreshableStore<T, K extends Writable<T>>(store: K, refresh: () => Promise<T>, refreshOnInit = false) {
+	const obj = {
+		...store,
+		refresh: () => refresh().then(store.set)
+	}
+	setTimeout(() => refreshOnInit && obj.refresh(), 1)
+	return obj
+}

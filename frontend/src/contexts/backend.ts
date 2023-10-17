@@ -1,10 +1,11 @@
+import { writable } from 'svelte/store';
 import {
   ComethProvider,
   ComethWallet,
   ConnectAdaptor,
   SupportedNetworks
 } from '@cometh/connect-sdk';
-
+import { cachedStore } from '../helpers/reactivity-helpers';
 
 export function createFauxBackendCtx() {
 
@@ -15,7 +16,9 @@ export function createFauxBackendCtx() {
   let provider: ComethProvider;
 
   const ctx = {
-    
+  
+		address: cachedStore(writable<string | null>(null)),
+
 		async createAccount() {
 			
 			walletAdaptor = new ConnectAdaptor({
@@ -50,9 +53,17 @@ export function createFauxBackendCtx() {
         await txPending.wait();
     },
 
+<<<<<<< HEAD
     async testTransaction() {
       const txValues =  {
         to: sDAIMainnetContract, //deposit xDAI for sDAI
+=======
+    //   }
+
+    async makeSwapAndDeposit() {
+      const txValues = [{
+        to: "targetAddress2", //make a swap to DAI
+>>>>>>> ff3e280c51658e0a12888cbd03d015cfa28059c6
         value: "0x00", //User Input
         data: "0x", // Calldata
       };
@@ -81,20 +92,31 @@ export function createFauxBackendCtx() {
         value: "0x00", //User Input
         data: "0x", //Calldata of the tx
       }, {
+<<<<<<< HEAD
         to: sDAIMainnetContract, //deposit xDAI for sDAI
+=======
+        to: "targetAddress2", //deposit DAI for sDAI
+>>>>>>> ff3e280c51658e0a12888cbd03d015cfa28059c6
         value: "0x00", //User Input
         data: "0x", //
       }];
            
+<<<<<<< HEAD
 
       const txBatch = await walletInstance.sendBatchTransactions(txValues);
       const txPending = await provider.getTransaction(txBatch.safeTxHash);
       await txPending.wait();
+=======
+      
+      const txPending = await walletInstance.sendBatchTransactions(txValues);
+      // await txPending.wait();
+>>>>>>> ff3e280c51658e0a12888cbd03d015cfa28059c6
     },
   
     // if (localStorageAddress) {
     //   ctx.createAccount()
     // }
+
     async createWallet() {
         
       const localStorageAddress = window.localStorage.getItem("walletAddress");
@@ -108,5 +130,6 @@ export function createFauxBackendCtx() {
         }
       },
     }
+
   return ctx
 }
