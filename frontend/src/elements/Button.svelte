@@ -17,7 +17,7 @@
 		? 'py-1'
 		: 'py-2'} select-none
   {disabled
-		? 'bg-neutral-350 pointer-events-none'
+		? 'bg-neutral-300 pointer-events-none'
 		: 'bg-sky-500 hover:bg-sky-600 active:bg-sky-700'} {className}"
 >
 	<slot />

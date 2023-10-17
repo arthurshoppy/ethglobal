@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { getContext } from "svelte";
+	import type { createRoutingCtx } from "../contexts/routing";
 	import type { createWeb3Ctx } from "../contexts/web3";
 	import Button from "../elements/Button.svelte";
 	import sdai from "../assets/sdai.png";
 	import usdc from "../assets/usdc.png";
 	import indicatorUp from "../assets/indicator-up.png";
 	import AssetBubble from "../elements/AssetBubble.svelte";
+
+	const routing = getContext<ReturnType<typeof createRoutingCtx>>("routing");
 
 	const web3 = getContext<ReturnType<typeof createWeb3Ctx>>("web3");
 	const balance = web3.balances.totalBalance;
@@ -18,12 +21,14 @@
 			title: "Savings DAI",
 			percentage: "5,00",
 			balance: $sDAI,
+			route: "investsdai",
 		},
 		{
 			icon: usdc,
 			title: "USD Coin",
 			percentage: "4,30",
 			balance: $cUSDC,
+			route: "investusdc",
 		},
 	].filter((a) => a.balance == 0);
 </script>
@@ -42,7 +47,11 @@
 					{asset.percentage} % per year
 				</div>
 				<div slot="right" class="ml-auto self-center">
-					<Button smol={true} disabled={$balance == 0}>Earn</Button>
+					<Button
+						smol={true}
+						disabled={$balance == 1}
+						on:click={() => routing.goto(asset.route)}>Earn</Button
+					>
 				</div>
 			</AssetBubble>
 		</div>

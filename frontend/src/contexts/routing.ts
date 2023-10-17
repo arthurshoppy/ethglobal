@@ -4,10 +4,10 @@ import { readable, writable } from "svelte/store";
 import Home from "../routes/Home.svelte";
 import Deposit from "../routes/Deposit.svelte";
 import Withdraw from "../routes/Withdraw.svelte";
-import Earn from "../routes/Earn.svelte";
 import Transactions from "../routes/Transactions.svelte";
 import Settings from "../routes/Settings.svelte";
 import SignIn from "../routes/SignIn.svelte";
+import InvestSDAI from "../routes/InvestSDAI.svelte";
 
 function runAnimation(steps: Keyframe[], options: KeyframeAnimationOptions = { duration: 50 }) {
     return new Promise(r => document.getElementById('outlet')!.animate(steps, options).onfinish = r)
@@ -21,7 +21,8 @@ export function createRoutingCtx() {
         home: Home,
         deposit: Deposit,
 				withdraw: Withdraw,
-        earn: Earn,
+        
+				investsdai: InvestSDAI,
 
         transactions: Transactions,
         settings: Settings

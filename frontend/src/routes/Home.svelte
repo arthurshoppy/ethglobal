@@ -46,7 +46,7 @@
 			<button
 				class="rounded-full transition-colors text-white font-normal {$balance <=
 				0
-					? 'bg-neutral-350 pointer-events-none'
+					? 'bg-neutral-300 pointer-events-none'
 					: 'bg-sky-500 hover:bg-sky-600 active:bg-sky-700'} select-none w-10 h-10 flex"
 				on:click={() => routing.goto("withdraw")}
 			>
