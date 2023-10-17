@@ -4,6 +4,7 @@ import {
   ConnectAdaptor,
   SupportedNetworks
 } from '@cometh/connect-sdk';
+import { cachedStore } from '../helpers/reactivity-helpers';
 
 export function createFauxBackendCtx() {
 
@@ -12,7 +13,7 @@ export function createFauxBackendCtx() {
 
   const ctx = {
   
-		address: writable<string | null>(null),
+		address: cachedStore(writable<string | null>(null)),
 
 		async createAccount() {
 			

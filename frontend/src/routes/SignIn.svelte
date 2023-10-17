@@ -15,7 +15,7 @@
 
 	async function signIn() {
 		// TODO: use createAccount here
-		backend.address.set("0x1234567");
+		backend.address.set("0xB4Aa0cCbb67276E08283EF43D7c95132C71A274C");
 
 		routing.goto("home", true);
 	}

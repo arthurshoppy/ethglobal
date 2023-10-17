@@ -3,11 +3,14 @@
 	import { createRoutingCtx } from "./contexts/routing";
 	import AccountOutlet from "./elements/AccountOutlet.svelte";
 	import { createFauxBackendCtx } from "./contexts/backend";
+	import { createWeb3Ctx } from "./contexts/web3";
 
 	setContext("fauxBackend", createFauxBackendCtx());
 	const backend =
 		getContext<ReturnType<typeof createFauxBackendCtx>>("fauxBackend");
 	const address = backend.address;
+
+	setContext("web3", createWeb3Ctx());
 
 	setContext("routing", createRoutingCtx());
 	const routing = getContext<ReturnType<typeof createRoutingCtx>>("routing");

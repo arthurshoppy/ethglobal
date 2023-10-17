@@ -2,7 +2,8 @@ import { tick, type ComponentType } from "svelte";
 import { readable, writable } from "svelte/store";
 
 import Home from "../routes/Home.svelte";
-import AddFunds from "../routes/AddFunds.svelte";
+import Deposit from "../routes/Deposit.svelte";
+import Withdraw from "../routes/Withdraw.svelte";
 import Earn from "../routes/Earn.svelte";
 import Transactions from "../routes/Transactions.svelte";
 import Settings from "../routes/Settings.svelte";
@@ -18,7 +19,8 @@ export function createRoutingCtx() {
 				signin: SignIn,
 
         home: Home,
-        addfunds: AddFunds,
+        deposit: Deposit,
+				withdraw: Withdraw,
         earn: Earn,
 
         transactions: Transactions,
