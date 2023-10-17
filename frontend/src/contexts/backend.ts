@@ -33,7 +33,6 @@ export function createFauxBackendCtx() {
       
 		},
 
-
     //   async initializeAccount() {
     //    await walletInstance.connect(localStorageAddress);
     //   },
@@ -53,17 +52,9 @@ export function createFauxBackendCtx() {
         await txPending.wait();
     },
 
-<<<<<<< HEAD
     async testTransaction() {
       const txValues =  {
         to: sDAIMainnetContract, //deposit xDAI for sDAI
-=======
-    //   }
-
-    async makeSwapAndDeposit() {
-      const txValues = [{
-        to: "targetAddress2", //make a swap to DAI
->>>>>>> ff3e280c51658e0a12888cbd03d015cfa28059c6
         value: "0x00", //User Input
         data: "0x", // Calldata
       };
@@ -88,29 +79,19 @@ export function createFauxBackendCtx() {
     async makeSwapAndDeposit() {
       provider = new ComethProvider(walletInstance);
       const txValues = [{
-        to: targetAddress2, //make a swap to ETH to xDAI(if we build it with EURe)
+        to: "targetAddress2", //make a swap to ETH to xDAI(if we build it with EURe)
         value: "0x00", //User Input
         data: "0x", //Calldata of the tx
       }, {
-<<<<<<< HEAD
         to: sDAIMainnetContract, //deposit xDAI for sDAI
-=======
-        to: "targetAddress2", //deposit DAI for sDAI
->>>>>>> ff3e280c51658e0a12888cbd03d015cfa28059c6
         value: "0x00", //User Input
         data: "0x", //
       }];
            
-<<<<<<< HEAD
 
       const txBatch = await walletInstance.sendBatchTransactions(txValues);
       const txPending = await provider.getTransaction(txBatch.safeTxHash);
       await txPending.wait();
-=======
-      
-      const txPending = await walletInstance.sendBatchTransactions(txValues);
-      // await txPending.wait();
->>>>>>> ff3e280c51658e0a12888cbd03d015cfa28059c6
     },
   
     // if (localStorageAddress) {
