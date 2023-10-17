@@ -1,51 +1,33 @@
 <script lang="ts">
-  import { getContext } from "svelte";
-  import type { createAuthCtx } from "../contexts/auth";
+	import { getContext } from "svelte";
 
-  import at from "../assets/at.png";
-  import lock from "../assets/lock.png";
-  import dcLogo from "../assets/dc.png";
-  import type { createFauxBackendCtx } from "../contexts/backend";
+	import type { createFauxBackendCtx } from "../contexts/backend";
+	import type { createRoutingCtx } from "../contexts/routing";
+	import Button from "../elements/Button.svelte";
 
-  const backend = getContext<ReturnType<typeof createFauxBackendCtx>>("fauxBackend");
-    backend.createAccount();
+	import logo from "../assets/logo.png";
+	import bolt from "../assets/bolt.png";
 
-  const auth = getContext<ReturnType<typeof createAuthCtx>>("auth");
-  const supabase = auth.getClient();
+	const backend =
+		getContext<ReturnType<typeof createFauxBackendCtx>>("fauxBackend");
 
-  function signInWithDiscord() {
-    supabase.auth.signInWithOAuth({
-      provider: "discord",
-    });
-  }
+	const routing = getContext<ReturnType<typeof createRoutingCtx>>("routing");
+
+	async function signIn() {
+		// TODO: use createAccount here
+		backend.address.set("0xB4Aa0cCbb67276E08283EF43D7c95132C71A274C");
+
+		routing.goto("home", true);
+	}
 </script>
 
-<div class="flex flex-col gap-4">
-  <div class="text-center text-xl mb-6">Sign In to start</div>
+<div class="flex flex-col">
+	<img src={logo} alt="logo" class="w-20 h-20 mx-auto" />
 
-  <div class="flex flex-col gap-2">
-    <div class="flex gap-1 bg-white border border-gray-200 focus-within:border-gray-400 rounded-lg pl-2 py-1 w-52">
-      <img class="w-4 h-4 self-center" src={at} alt="email symbol" />
-      <input class="bg-transparent text-sm font-normal outline-none text-gray-500 w-full pr-0.5" placeholder="Email" />
-    </div>
-    <div class="flex gap-1 bg-white border border-gray-200 focus-within:border-gray-400 rounded-lg pl-2 py-1">
-      <img class="w-4 h-4 self-center" src={lock} alt="password symbol" />
-      <input class="bg-transparent text-sm font-normal outline-none text-gray-500 w-full pr-0.5" placeholder="Password" />
-    </div>
-  </div>
+	<div class="text-center text-2xl mt-1 mb-8">DaiDaddy</div>
 
-  <div class="flex items-center my-4">
-    <div class="h-px bg-gray-300 grow" />
-    <div class="mx-2 text-gray-400 font-normal text-mid select-none">Or</div>
-    <div class="h-px bg-gray-300 grow" />
-  </div>
-
-  <button
-    class="font-semibold text-mid bg-[#7187dd] hover:bg-[#6a7ecf] active:bg-[#596aaf] mx-auto px-2.5 py-2 rounded text-white select-none flex gap-2 items-center transition-colors"
-    on:click={signInWithDiscord}
-  >
-    <img class="w-4 h-4" src={dcLogo} alt="discord logo" />
-    Sign in with Discord
-  </button>
-  <!-- <div>New wallet is ${backend.createAccount}</div> -->
+	<Button class="flex mx-auto" on:click={signIn}>
+		<img class="w-6 h-6 -ml-2 mr-1" src={bolt} alt="discord logo" />
+		<span class="text-center mr-auto">Sign In</span>
+	</Button>
 </div>
