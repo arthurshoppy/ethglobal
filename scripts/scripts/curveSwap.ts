@@ -36,7 +36,7 @@ async function swap(tokenIn: PoolToken, tokenOut: PoolToken, amountIn: BigNumber
   const dx = await eureusdPool.callStatic.get_dy_underlying(tokenIn, tokenOut, amountIn)
   const slippage = 1000 // 0.1%
   // const gas = await eureusdPool.estimateGas.exchange_underlying(tokenIn, tokenOut, amountIn, dx.sub(dx.div(slippage)))
-  const tx = await eureusdPool.exchange_underlying(tokenIn, tokenOut, utils.parseEther("100"), dx.sub(dx.div(slippage))) // { gasLimit: gas.add(1000000) }
+  const tx = await eureusdPool.exchange_underlying(tokenIn, tokenOut, amountIn, dx.sub(dx.div(slippage))) // { gasLimit: gas.add(1000000) }
   await tx.wait()
 }
 
