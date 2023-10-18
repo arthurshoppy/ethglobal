@@ -6,7 +6,7 @@ import {
   SupportedNetworks
 } from '@cometh/connect-sdk';
 import { cachedStore } from '../helpers/reactivity-helpers';
-import { type BigNumberish, Contract, providers, utils, ethers } from "ethers"
+import { type BigNumberish, Contract, utils } from "ethers"
 import {sDAIabi} from '../shared/abis/sDAIabi'
 
 enum PoolToken {
@@ -28,8 +28,7 @@ export function createFauxBackendCtx() {
     
     address: cachedStore(writable<string | null>(null)),
     
-		async createAccount() {
-      
+		async initializeWallet() {
       walletAdaptor = new ConnectAdaptor({
         chainId: SupportedNetworks.CHIADO,
 				apiKey: import.meta.env.VITE_COMMETH_CHIADO,
@@ -38,24 +37,22 @@ export function createFauxBackendCtx() {
 			walletInstance = await new ComethWallet({
         authAdapter: walletAdaptor,
 				apiKey: import.meta.env.VITE_COMMETH_CHIADO,
-        rpcUrl: import.meta.env.VITE_RPC_GNOSIS,
+        rpcUrl: import.meta.env.VITE_RPC_CHIADO,
 			});
-      
-      
+
+			provider = new ComethProvider(walletInstance);
 		},
 
-    async createWallet() {
-        
-      localStorageAddress = window.localStorage.getItem("walletAddress");
+    async connectWallet() {
+      localStorageAddress = localStorage.getItem("walletAddress");
   
-        if (localStorageAddress) {
-        await walletInstance.connect(localStorageAddress);
-        } else {
-        await walletInstance.connect();
-        const walletAddress = await walletInstance.getAddress();
-        console.log(walletAddress);
-        // window.localStorage.setItem("walletAddress", walletAddress);
-        }
+			if (localStorageAddress) {
+				await walletInstance.connect(localStorageAddress);
+			} else {
+				await walletInstance.connect();
+				localStorage.setItem("walletAddress", await walletInstance.getAddress());
+			}
+			console.log(await walletInstance.getAddress());
     },
     
 		async swap(tokenIn: PoolToken, tokenOut: PoolToken, amountIn: BigNumberish) {
@@ -67,25 +64,19 @@ export function createFauxBackendCtx() {
 		},
 
     async testTransaction() {
-      const USER = await walletInstance.getAddress();
-
-      provider = new ComethProvider(walletInstance);
-
-      // const sDAIContract = new Contract(sDAIChiadoContract, "approve(address, uint256)") // get contract
-      // const encodedData = await sDAIContract.populateTransaction.approve(USER, 123); //encoded functioncall
-      
-      const sDAIiFace = new ethers.utils.Interface(sDAIabi)
-      const data = sDAIiFace.encodeFunctionData("approve", [USER, 123]) ;
+      const wxDAI = new Contract("0x18c8a7ec7897177E4529065a7E7B0878358B3BfF", ["function approve(address, uint256)"]) // get contract
+      const popTx = await wxDAI.populateTransaction.approve("0x20e5eB701E8d711D419D444814308f8c2243461F", utils.parseUnits("1", 18)); //encoded functioncall
 
       const txValues =  {
-        to: sDAIChiadoContract, //deposit xDAI for sDAI
-        data: data, // Calldata
-        value: "0x00", //User Input
+        to: popTx.to!, // approve wxDAI for sDAI
+        data: popTx.data!, // Calldata
+        value: "0x00"
       };
 
       const tx = await walletInstance.sendTransaction(txValues);
       const txPending = await provider.getTransaction(tx.safeTxHash);
-      await txPending.wait();
+      const receipt = await txPending.wait();
+			console.log(receipt)
     },
    
 
@@ -97,7 +88,7 @@ export function createFauxBackendCtx() {
       
       //TODO 
       // EURe curve swap to WxDAI
-      const encoder = new ethers.utils.Interface(sDAIabi) // get contract
+      const encoder = new utils.Interface(sDAIabi) // get contract
       const encodedApprove = encoder.encodeFunctionData('approve', [USER, value]) //encoded functioncall
       const encodedDeposit = encoder.encodeFunctionData('deposit', [USER, value]) //encoded functioncall
       //TODO - Check the values of these tx and format correctly
@@ -126,7 +117,7 @@ export function createFauxBackendCtx() {
       const USER = localStorageAddress;
       provider = new ComethProvider(walletInstance);
       
-      const encoder = new ethers.utils.Interface(sDAIabi) // get contract
+      const encoder = new utils.Interface(sDAIabi) // get contract
       const encodedApprove = encoder.encodeFunctionData('approve', [USER, value]) //encoded functioncall
       const encodedDeposit = encoder.encodeFunctionData('deposit', [USER, value]) //encoded functioncall
       //TODO - Check the values of these tx and format correctly
@@ -152,7 +143,7 @@ export function createFauxBackendCtx() {
     const USER = localStorageAddress;
     provider = new ComethProvider(walletInstance);
     
-    const encoder = new ethers.utils.Interface(sDAIabi) // get contract
+    const encoder = new utils.Interface(sDAIabi) // get contract
     const encodedApprove = encoder.encodeFunctionData('approve', [USER, value]) //encoded functioncall
     const encodedDeposit = encoder.encodeFunctionData('deposit', [USER, value]) //encoded functioncall
     //TODO - Check the values of these tx and format correctly
