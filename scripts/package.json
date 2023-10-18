@@ -3,15 +3,22 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "xtransfer": "tsc && node dist/xtransfer.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "ethers": "^5.7.0"
+    "@types/chai": "^4.3.9",
+    "@types/mocha": "^10.0.2",
+    "@types/node": "^20.8.6",
+    "ethers": "^5.7.2",
+    "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@connext/sdk": "^2.1.2",
     "@safe-global/safe-core-sdk-types": "^2.3.0"
   }
 }
