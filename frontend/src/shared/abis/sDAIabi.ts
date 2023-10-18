@@ -1,4 +1,4 @@
-[
+export const sDAIabi = [
     {
         "inputs": [
             {
@@ -873,5 +873,4 @@
         ],
         "stateMutability": "nonpayable",
         "type": "function"
-    }
-]
+    }]
