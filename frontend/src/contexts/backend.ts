@@ -6,6 +6,13 @@ import {
   SupportedNetworks
 } from '@cometh/connect-sdk';
 import { cachedStore } from '../helpers/reactivity-helpers';
+import { type BigNumberish, Contract, providers, utils } from "ethers"
+
+enum PoolToken {
+  EURe,
+  wxDAI,
+  USDC
+}
 
 export function createFauxBackendCtx() {
 
@@ -30,7 +37,15 @@ export function createFauxBackendCtx() {
 				authAdapter: walletAdaptor,
 				apiKey: import.meta.env.VITE_COMMETH,
 			});
-      
+
+		},
+
+		async swap(tokenIn: PoolToken, tokenOut: PoolToken, amountIn: BigNumberish) {
+			// TODO: not finished
+			const erc20 = new Contract("", ["function approve(address, uint256)", "function balanceOf(address) returns(uint256)"]);
+			const tx = await erc20.populateTransaction.balanceOf("")
+
+			walletInstance.sendTransaction({ to: tx.to!, data: tx.data!, value: (tx.value ?? 0).toString() })
 		},
 
     //   async initializeAccount() {
@@ -40,7 +55,7 @@ export function createFauxBackendCtx() {
       async stakeSDAI(amount: number, ) {
         const value = amount;
         provider = new ComethProvider(walletInstance);
-       
+
         const txValues =  {
           to: sDAIMainnetContract, //deposit xDAI for sDAI
           value: "0x00", //User Input
