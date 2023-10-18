@@ -5,25 +5,42 @@
 	import type { createWeb3Ctx } from "../contexts/web3";
 	import arrowUp from "../assets/arrow-up.png";
 	import arrowDown from "../assets/arrow-down.png";
+	import indicatorUp from "../assets/indicator-up.png";
 	import Assets from "../elements/Assets.svelte";
 
 	const routing = getContext<ReturnType<typeof createRoutingCtx>>("routing");
 
 	const web3 = getContext<ReturnType<typeof createWeb3Ctx>>("web3");
 	const balance = web3.balances.totalBalance;
+	const sDAI = web3.balances.sDAI;
+	const cUSDC = web3.balances.cUSDC;
 </script>
 
 <div class="grid">
 	<div class="bg-white rounded-2xl flex px-6 py-5 mb-2">
 		<div class="mr-12">
-			<div class="flex items-end mt-1 w-32">
+			<div class="flex items-end mt-1 w-40">
 				<div class="text-4xl font-bold">{$balance.toFixed(0)}</div>
 				<span class="text-xl mb-0.5 -ml-0.5">,</span>
 				<div class="text-lg font-bold -mb-px">
 					{($balance % 1).toFixed(2).split(".")[1]} €
 				</div>
 			</div>
-			<div class="text-neutral-380 text-xs font-normal">Total balance</div>
+			{#if $sDAI > 0 || $cUSDC > 0}
+				<div class="mt-px -mb-2 flex gap-2">
+					<div class="text-mid">+0,04 €</div>
+					<div class="font-normal text-mid flex gap-1 text-green-500">
+						<img
+							src={indicatorUp}
+							alt="indicator up"
+							class="h-2 w-2 self-center"
+						/>
+						5,00 %
+					</div>
+				</div>
+			{:else}
+				<div class="text-neutral-380 text-xs font-normal">Total balance</div>
+			{/if}
 		</div>
 
 		<div class="flex flex-col gap-1 items-center ml-auto mr-4">

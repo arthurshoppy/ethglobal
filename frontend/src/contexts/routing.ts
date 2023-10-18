@@ -1,7 +1,7 @@
 import { tick, type ComponentType } from "svelte";
 import { readable, writable } from "svelte/store";
 
-import Home from "../routes/Home.svelte";
+import Dashboard from "../routes/Dashboard.svelte";
 import Deposit from "../routes/Deposit.svelte";
 import Withdraw from "../routes/Withdraw.svelte";
 import Transactions from "../routes/Transactions.svelte";
@@ -18,7 +18,7 @@ export function createRoutingCtx() {
     const routes: { [key: string]: ComponentType } = {
 				signin: SignIn,
 
-        home: Home,
+        dashboard: Dashboard,
         deposit: Deposit,
 				withdraw: Withdraw,
         
@@ -29,7 +29,7 @@ export function createRoutingCtx() {
     }
 
     const ctx = {
-        history: [''] as string[],
+        history: [] as string[],
 
         route: writable<string>('signin'),
 
