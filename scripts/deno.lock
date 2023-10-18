@@ -3126,6 +3126,7 @@
     }
   },
   "remote": {
+    "https://deno.land/std@0.204.0/dotenv/mod.ts": "1da8c6d0e7f7d8a5c2b19400b763bc11739df24acec235dda7ea2cfd3d300057",
     "https://esm.sh/@safe-global/api-kit@1.3.1": "803eb431e61dccff739e80f7a813c73feeae9115df47dae7bfd0ab927d33d8f0",
     "https://esm.sh/@safe-global/api-kit@1.3.1&raw": "803eb431e61dccff739e80f7a813c73feeae9115df47dae7bfd0ab927d33d8f0",
     "https://esm.sh/@safe-global/protocol-kit@1.3.0": "bc97d5f4c6bc0b0f2dc8508570dff4e750944b9eb45f2c11452637dca9358b8f",

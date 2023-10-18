@@ -4,14 +4,14 @@ import { getSigner, sdkConfig, Chains } from "./config.ts";
 
 const {sdkBase} = await create(sdkConfig);
 
-const signer = getSigner(Chains.gnosis)
+const signer = getSigner(Chains.polygon)
 
 const signerAddress = await signer.getAddress();
 
 // xcall parameters
-const originDomain = "6778479"; // Gnosis mainnet
-const destinationDomain = "1886350457"; // Polygon mainnet
-const originAsset = "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83"; // USDC on Gnosis xDAI see: https://gnosisscan.io/token/0xddafbb505ad214d7b80b1f830fccc89b60fb7a83
+const originDomain = "1886350457"; // Polygon mainnet
+const destinationDomain = "6778479"; // Gnosis mainnet
+const originAsset = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"; // USDC on Polygon mainnet see: https://polygonscan.com/address/0x2791bca1f2de4661ed88a30c99a7a9449aa84174 
 const amount = utils.parseUnits("1",6).toString();
 const slippage = "10000";
 
@@ -26,8 +26,8 @@ const relayerFee = (
 
 // Prepare the xcall params
 const xcallParams = {
-  origin: originDomain,           // send from Gnosis
-  destination: destinationDomain, // to Polygon
+  origin: originDomain,           // send from Polygon
+  destination: destinationDomain, // to Gnosis
   to: signerAddress,              // the address that should receive the funds on destination
   asset: originAsset,             // address of the token contract
   delegate: signerAddress,        // address allowed to execute transaction on destination side in addition to relayers
