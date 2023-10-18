@@ -18,7 +18,7 @@
 	let expanded = false;
 
 	const menu = [
-		{ icon: dashboard, title: "Dashboard", route: "home" },
+		{ icon: dashboard, title: "Dashboard", route: "dashboard" },
 		{ icon: transactions, title: "Transactions", route: "transactions" },
 		{ icon: settings, title: "Settings", route: "settings" },
 	];

@@ -49,15 +49,14 @@
 			<div slot="title">{asset.title}</div>
 			<div slot="desc" class="font-normal text-mid text-neutral-380 flex gap-1">
 				{asset.balance}
-				{asset.name} ≈ {asset.balance}
-				{asset.symbol}
+				{asset.name}
 			</div>
-			<div slot="right" class="ml-auto self-center">
+			<div slot="right" class="ml-auto self-center flex flex-col items-end">
 				<div class="text-right">{asset.balance} {asset.symbol}</div>
 				<div
-					class="font-normal text-mid {asset.percentage[0] == '0'
-						? 'text-gray-300 ml-1'
-						: 'text-green-500'} flex gap-1"
+					class="font-normal text-mid flex gap-1 {asset.percentage[0] == '0'
+						? 'text-gray-300'
+						: 'text-green-500'}"
 				>
 					{#if asset.percentage[0] != "0"}
 						<img
