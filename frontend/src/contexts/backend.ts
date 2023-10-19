@@ -55,64 +55,32 @@ export function createFauxBackendCtx() {
 			console.log(await walletInstance.getAddress());
     },
     
-		async swap(tokenIn: PoolToken, tokenOut: PoolToken, amountIn: BigNumberish) {
-			// TODO: not finished
-			const erc20 = new Contract("", ["function approve(address, uint256)", "function balanceOf(address) returns(uint256)"]);
-			const tx = await erc20.populateTransaction.balanceOf("")
+    async depositSDAI(amount: string) { // Input amount from frontend
+      const USER = walletInstance.getAddress();
 
-			walletInstance.sendTransaction({ to: tx.to!, data: tx.data!, value: (tx.value ?? 0).toString() })
-		},
+      const wxDAI = new Contract("0x18c8a7ec7897177E4529065a7E7B0878358B3BfF", ["function approve(address, uint256)"]) // address: wallet/contract you want to approve to use funds, uint256: amount of funds you give approval
+      const sDAIapproveTx = await wxDAI.populateTransaction.approve("0x20e5eB701E8d711D419D444814308f8c2243461F", utils.parseUnits(amount, 18)); //encoded functioncall
+      
+      const sDAI = new Contract("0x20e5eB701E8d711D419D444814308f8c2243461F", ["function deposit(uint256, address)"]) // uint256: deposit assets going in, receiver: USER address 
+      const sDAIdepositTx = await sDAI.populateTransaction.deposit(utils.parseUnits(amount, 18), USER); //encoded functioncall
 
-    async testTransaction() {
-      const wxDAI = new Contract("0x18c8a7ec7897177E4529065a7E7B0878358B3BfF", ["function approve(address, uint256)"]) // get contract
-      const popTx = await wxDAI.populateTransaction.approve("0x20e5eB701E8d711D419D444814308f8c2243461F", utils.parseUnits("1", 18)); //encoded functioncall
-
-      const txValues =  {
-        to: popTx.to!, // approve wxDAI for sDAI
-        data: popTx.data!, // Calldata
+      const txValues = [{
+        to: sDAIapproveTx.to!, // approve wxDAI for sDAI
+        data: sDAIapproveTx.data!, // Calldata
         value: "0x00"
-      };
+      }, {
+        to: sDAIdepositTx.to!, // deposit wxDAI for sDAI
+        data: sDAIdepositTx.data!, // Calldata
+        value: "0x00"
+      }];
 
-      const tx = await walletInstance.sendTransaction(txValues);
-      const txPending = await provider.getTransaction(tx.safeTxHash);
-      const receipt = await txPending.wait();
-			console.log(receipt)
-    },
-   
-
-    async stakeSDAI(amount: number) {
-      const value = amount;
-      const USER = localStorageAddress;
-
-      provider = new ComethProvider(walletInstance);
-      
-      //TODO 
-      // EURe curve swap to WxDAI
-      const encoder = new utils.Interface(sDAIabi) // get contract
-      const encodedApprove = encoder.encodeFunctionData('approve', [USER, value]) //encoded functioncall
-      const encodedDeposit = encoder.encodeFunctionData('deposit', [USER, value]) //encoded functioncall
-      //TODO - Check the values of these tx and format correctly
-
-      const txValues =  [{
-        //Approve function call
-        to: sDAIMainnetContract, 
-        data: encodedApprove, // Calldata
-        value: "0x00", //User Input
-      },
-      { //deposit function call
-        to: sDAIMainnetContract, //deposit xDAI for sDAI
-        data: encodedDeposit, // Calldata
-        value: "0x00", //User Input
-      },]
-    
-      
       const tx = await walletInstance.sendBatchTransactions(txValues);
       const txPending = await provider.getTransaction(tx.safeTxHash);
-      await txPending.wait();
+      const receipt = await txPending.wait();
     },
 
   
-    async unstakeSDAI(amount:number) {
+    async withdrawSDAI (amount:number) {
       const value = amount;
       const USER = localStorageAddress;
       provider = new ComethProvider(walletInstance);
