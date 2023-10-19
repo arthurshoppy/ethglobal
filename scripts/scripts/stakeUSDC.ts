@@ -19,26 +19,27 @@ function makeErc20(address: string) {
     approve: async (address: string, amount: BigNumberish) => await (await erc20.approve(address, amount)).wait()
   }
 }
+
 const Tokens = {
-  USDC: makeErc20("0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d"),
-  Compound: makeErc20("0xF25212E676D1F7F89Cd72fFEe66158f541246445")
+  USDC: makeErc20("0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"),
+  cUSDC: makeErc20("0xF25212E676D1F7F89Cd72fFEe66158f541246445")
 }
 
 async function logBalances() {
-  console.log("USDC: " + formatUnits(await Tokens.USDC.balanceOf(addr)))
-  console.log("Compound: " + formatUnits(await Tokens.Compound.balanceOf(addr)))
+  console.log("USDC: " + formatUnits(await Tokens.USDC.balanceOf(addr), 6))
+  console.log("cUSDC: " + formatUnits(await Tokens.cUSDC.balanceOf(addr), 6))
 }
 
 
 await logBalances()
-const amount = utils.parseEther("32")
+const amount = utils.parseUnits("132", 6)
 console.log("Deposit")
 
 //approve usdc to use on compound
-await Tokens.USDC.approve(Tokens.Compound.address, amount) // approve the sDAI contract to use EURe
+await Tokens.USDC.approve(Tokens.cUSDC.address, amount) // approve the sDAI contract to use EURe
 
 // get contract
-const CompoundContract = new Contract(Tokens.Compound.address, ["function supply(address, uint256)"], signer);
+const CompoundContract = new Contract(Tokens.cUSDC.address, ["function supply(address, uint256)"], signer);
 
 //stake usdc
 const tx = await CompoundContract.supply(Tokens.USDC.address, amount)

@@ -21,22 +21,22 @@ function makeErc20(address: string) {
 }
 
 const Tokens = {
-  USDC: makeErc20("0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d"),
-  Compound: makeErc20("0xF25212E676D1F7F89Cd72fFEe66158f541246445")
+  USDC: makeErc20("0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"),
+  cUSDC: makeErc20("0xF25212E676D1F7F89Cd72fFEe66158f541246445")
 }
 
 async function logBalances() {
-  console.log("USDC: " + formatUnits(await Tokens.USDC.balanceOf(addr)))
-  console.log("Compound: " + formatUnits(await Tokens.Compound.balanceOf(addr)))
+  console.log("USDC: " + formatUnits(await Tokens.USDC.balanceOf(addr), 6))
+  console.log("cUSDC: " + formatUnits(await Tokens.cUSDC.balanceOf(addr), 6))
 }
 
 
 await logBalances()
-const amount = utils.parseEther("32")
+const amount = utils.parseUnits("32", 6)
 console.log("Deposit")
 
 // get contract
-const CompoundContract = new Contract(Tokens.Compound.address, ["function withdraw(address, uint256)"], signer);
+const CompoundContract = new Contract(Tokens.cUSDC.address, ["function withdraw(address, uint256)"], signer);
 
 //unstake cUSDC
 const tx = await CompoundContract.withdraw(Tokens.USDC.address, amount)
