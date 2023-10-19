@@ -21,7 +21,7 @@
 
 		await backend.initializeWallet();
 		await backend.connectWallet();
-		await backend.testTransaction();
+	
 	}
 </script>
 
