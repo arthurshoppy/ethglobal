@@ -1,8 +1,8 @@
-import { create } from "npm:@connext/sdk";
+import { SdkUtils, create } from "@connext/sdk";
 import { BigNumber, utils } from "ethers";
 import { getSigner, sdkConfig, Chains } from "./config.ts";
 
-const {sdkBase} = await create(sdkConfig);
+const {sdkBase, sdkUtils } = await create(sdkConfig);
 
 const signer = getSigner(Chains.gnosis)
 
@@ -12,17 +12,16 @@ const signerAddress = await signer.getAddress();
 const originDomain = "6778479"; // Gnosis mainnet
 const destinationDomain = "1886350457"; // Polygon mainnet
 const originAsset = "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83"; // USDC on Gnosis xDAI see: https://gnosisscan.io/token/0xddafbb505ad214d7b80b1f830fccc89b60fb7a83
-const amount = utils.parseUnits("1",6).toString();
+const amount = utils.parseUnits("1", 6).toString();
 const slippage = "10000";
 
 console.log("estimateRelayerFee")
 // Estimate the relayer fee
-const relayerFee = (
-  await sdkBase.estimateRelayerFee({
-    originDomain, 
-    destinationDomain
-  })
-).toString();
+const relayerFeeBn = await sdkBase.estimateRelayerFee({
+  originDomain, 
+  destinationDomain
+})
+const relayerFee = relayerFeeBn.add(relayerFeeBn.div(2)).toString()
 
 // Prepare the xcall params
 const xcallParams = {
@@ -46,9 +45,8 @@ const approveTxReq = await sdkBase.approveIfNeeded(
   amount
 )
 
-
 if (approveTxReq) {
-    console.log("sendTransaction")
+  console.log("sendTransaction")
   const approveTxReceipt = await signer.sendTransaction(approveTxReq);
   await approveTxReceipt.wait();
 }
@@ -56,9 +54,26 @@ if (approveTxReq) {
 console.log("xcall")
 // Send the xcall
 const xcallTxReq = await sdkBase.xcall(xcallParams);
-xcallTxReq.gasLimit = BigNumber.from("20000000"); 
+xcallTxReq.gasLimit = BigNumber.from("10000000"); 
+
+const gasFee = await signer.provider.getGasPrice()
+xcallTxReq.maxFeePerGas = gasFee.mul(2)
+xcallTxReq.maxPriorityFeePerGas = gasFee.mul(2)
+
 console.log("sendTransactionTwo")
 const xcallTxReceipt = await signer.sendTransaction(xcallTxReq);
 console.log(xcallTxReceipt);
 await xcallTxReceipt.wait();
-xcallTxReceipt.hash;
+console.log("xcall sent: " + xcallTxReceipt.hash)
+
+await (new Promise(r => {
+  setInterval(async () => {
+    const transfers = await sdkUtils.getTransfers({ 
+      transactionHash: xcallTxReceipt.hash
+    })
+    if (transfers[0]?.status === "Executed") {
+      r(undefined)
+    }
+  }, 25_000)
+}))
+console.log("Bridged")

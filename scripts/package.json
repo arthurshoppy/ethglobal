@@ -14,11 +14,13 @@
     "@types/chai": "^4.3.9",
     "@types/mocha": "^10.0.2",
     "@types/node": "^20.8.6",
-    "ethers": "^5.7.2",
+    "ethers": "^5.7.0",
     "typescript": "^5.2.2"
   },
   "dependencies": {
     "@connext/sdk": "^2.1.2",
-    "@safe-global/safe-core-sdk-types": "^2.3.0"
+    "@safe-global/safe-core-sdk-types": "^2.3.0",
+    "dotenv": "^16.3.1",
+    "ts-node": "^10.9.1"
   }
 }
