@@ -133,11 +133,11 @@ export function createFauxBackendCtx() {
       const curvePoolApprove = await EURe.populateTransaction.approve("0xE3FFF29d4DC930EBb787FeCd49Ee5963DADf60b6", utils.parseUnits(amount, 18)); 
       
       const curvePoolSwap = new Contract("0xE3FFF29d4DC930EBb787FeCd49Ee5963DADf60b6", ["function exchange_underlying (uin256, uin256, uin256,uin256)"]) // exchange_underlying(i: uint256, j: uint256, _dx: uint256, _min_dy: uint256, _receiver: address = msg.sender) -> uint256
-      const EUReSwapTx = await EURe.populateTransaction.exchange_underlying("0x20e5eB701E8d711D419D444814308f8c2243461F", utils.parseUnits(amount, 18)); 
+      const EUReSwapTx = await curvePoolSwap.populateTransaction.exchange_underlying("0x20e5eB701E8d711D419D444814308f8c2243461F", utils.parseUnits(amount, 18)); 
       
-      const GnosisUSDC = new Contract("0xcB444e90D8198415266c6a2724b7900fb12FC56E", [""]) 
-      const connextBridge = new Contract("", [""]) // address: wallet/contract you want to approve to use funds, uint256: amount of funds you give approval
-      const bridgeApproveTx = await EURe.populateTransaction.approve("0x20e5eB701E8d711D419D444814308f8c2243461F", utils.parseUnits(amount, 18)); 
+      const GnosisUSDC = new Contract("0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83", ["function approve(address, uint256)"]) 
+      const bridegTcontract = new Contract("", [""]) // address: wallet/contract you want to approve to use funds, uint256: amount of funds you give approval
+      const bridgeApproveTx = await GnosisUSDC.populateTransaction.approve("0x20e5eB701E8d711D419D444814308f8c2243461F", utils.parseUnits(amount, 18)); 
       
 
       const txValues = [{
