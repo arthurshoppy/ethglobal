@@ -5,7 +5,7 @@ export const Mainnet = {
 	wxDAI: "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d", //Gnosis
 	sDAI: "0xaf204776c7245bF4147c2612BF6e5972Ee483701", //Gnosis
 	cUSDC: "0xF25212E676D1F7F89Cd72fFEe66158f541246445", //Mainnet ? 
-	USDC: "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83" //Mainnet ?
+	USDC: "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83" //WRONG ADDRESS 
 }
 
 export const Testnet = {
