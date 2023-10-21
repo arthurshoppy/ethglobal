@@ -16,8 +16,6 @@
 	const cUSDC = web3.balances.cUSDC;
 	const apyDAI = web3.apy.dai;
 	const apyUSDC = web3.apy.usdc;
-	const iDAI = web3.interest.dai;
-	const iUSDC = web3.interest.usdc;
 </script>
 
 <div class="grid">
@@ -32,9 +30,6 @@
 			</div>
 			{#if $sDAI > 0 || $cUSDC > 0}
 				<div class="mt-px -mb-2 flex gap-2">
-					<div class="text-mid">
-						+{($iDAI + $iUSDC).toFixed(2).replace(".", ",")} €
-					</div>
 					<div class="font-normal text-mid flex gap-1 text-green-500">
 						<img
 							src={indicatorUp}
