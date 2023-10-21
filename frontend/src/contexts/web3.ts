@@ -46,19 +46,19 @@ export function createWeb3Ctx() {
 	
 			EURe: cachedStore(refreshableStore(writable<number>(0), async () => {
 				const eure = new Contract(Mainnet.gnosis.EURe, ["function balanceOf(address) returns (uint256)"], providerGnosis)
-				const balance: BigNumber = await eure.callStatic.balanceOf(backend.addressGnosis.current)
+				const balance: BigNumber = await eure.callStatic.balanceOf(backend.address.current)
 				return Number(utils.formatUnits(balance, 18))
 			})),
 	
 			sDAI: cachedStore(refreshableStore(writable<number>(0), async () => {
 				const sdai = new Contract(Mainnet.gnosis.sDAI, ["function maxRedeem(address) returns (uint256)"], providerGnosis)
-				const balance: BigNumber = await sdai.callStatic.maxRedeem(backend.addressGnosis.current)
+				const balance: BigNumber = await sdai.callStatic.maxRedeem(backend.address.current)
 				return Number(utils.formatUnits(balance, 18))
 			})),
 	
 			cUSDC: cachedStore(refreshableStore(writable<number>(0), async () => {
 				const cusdc = new Contract(Mainnet.polygon.cUSDC, ["function balanceOf(address) returns (uint256)"], providerPolygon)
-				const balance: BigNumber = await cusdc.callStatic.balanceOf(backend.addressPolygon.current)
+				const balance: BigNumber = await cusdc.callStatic.balanceOf(backend.address.current)
 				return Number(utils.formatUnits(balance, 6))
 			}))
 		},
@@ -175,7 +175,7 @@ export function createWeb3Ctx() {
 
 	}
 
-	backend.addressGnosis.subscribe(addr => {
+	backend.address.subscribe(addr => {
 		if (!addr) return
 		ctx.updateBalances()
 	})

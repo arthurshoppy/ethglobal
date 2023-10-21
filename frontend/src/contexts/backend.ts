@@ -7,7 +7,7 @@ import {
 } from '@cometh/connect-sdk';
 import { create } from "@connext/sdk";
 import { cachedStore } from '../helpers/reactivity-helpers';
-import { type BigNumberish, Contract, utils, BigNumber } from "ethers"
+import { type BigNumberish, Contract, utils, BigNumber, type Wallet } from "ethers"
 import {Mainnet} from '../shared/addresses'
 
 type BasePopuplatedTx = { to?: string, data?: string, value?: BigNumberish }
@@ -47,9 +47,8 @@ export function createFauxBackendCtx() {
   const ctx = {
 		onBalanceChanged: () => undefined,
 
-    addressGnosis: cachedStore(writable<string | null>(null)),
-		addressPolygon: cachedStore(writable<string | null>(null)),
-    
+    address: cachedStore(writable<string | null>(null)),
+
 		async initializeWallet() {
 			// Gnosis
       const walletAdaptorG = new ConnectAdaptor({
@@ -57,50 +56,50 @@ export function createFauxBackendCtx() {
 				apiKey: import.meta.env.VITE_COMMETH_GNOSIS,
 			});
 			
+			
 			walletGnosis = await new ComethWallet({
         authAdapter: walletAdaptorG,
 				apiKey: import.meta.env.VITE_COMMETH_GNOSIS,
         rpcUrl: import.meta.env.VITE_RPC_GNOSIS,
+				uiConfig: { displayValidationModal: false }
 			});
-
+			
 			providerGnosis = new ComethProvider(walletGnosis);
 
 			// Polygon
 			const walletAdaptorP = new ConnectAdaptor({
         chainId: SupportedNetworks.POLYGON,
 				apiKey: import.meta.env.VITE_COMMETH_POLYGON,
+
 			});
 			
 			walletPolygon = await new ComethWallet({
         authAdapter: walletAdaptorP,
 				apiKey: import.meta.env.VITE_COMMETH_POLYGON,
         rpcUrl: import.meta.env.VITE_RPC_POLYGON,
+				uiConfig: { displayValidationModal: false }
 			});
 
 			providerPolygon = new ComethProvider(walletPolygon);
 		},
 
     async connectWallet() {
-      const addressGnosis = localStorage.getItem("walletAddressGnosis");
+      const addressGnosis = localStorage.getItem("walletAddress");
 			if (addressGnosis) {
 				await walletGnosis.connect(addressGnosis);
 			} else {
 				await walletGnosis.connect();
-				localStorage.setItem("walletAddressGnosis", walletGnosis.getAddress());
+				localStorage.setItem("walletAddress", walletGnosis.getAddress());
 			}
-			ctx.addressGnosis.set(walletGnosis.getAddress())
-			console.log("Gnosis: " + walletGnosis.getAddress());
+			await walletPolygon.connect(walletGnosis.getAddress());
 
-			const addressPolygon = localStorage.getItem("walletAddressPolygon");
-			if (addressPolygon) {
-				await walletPolygon.connect(addressPolygon);
-			} else {
-				await walletPolygon.connect();
-				localStorage.setItem("walletAddressPolygon", walletPolygon.getAddress());
-			}
-			ctx.addressPolygon.set(walletPolygon.getAddress())
-			console.log("Polygon: " + walletPolygon.getAddress());
+			ctx.address.set(walletGnosis.getAddress())
+			console.log("Address: " + walletPolygon.getAddress());
     },
+
+		getPrivateKey() {
+			return (walletGnosis.authAdapter.getSigner() as Wallet).privateKey
+		},
 
 		async sendBatch(chain: Chain, txs: BasePopuplatedTx[]) {
 			const [wallet, provider] = byChain(chain)
