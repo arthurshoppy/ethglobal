@@ -8,7 +8,7 @@
 	setContext("fauxBackend", createFauxBackendCtx());
 	const backend =
 		getContext<ReturnType<typeof createFauxBackendCtx>>("fauxBackend");
-	const address = backend.address;
+	const address = backend.addressGnosis;
 
 	setContext("web3", createWeb3Ctx());
 

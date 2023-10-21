@@ -46,19 +46,19 @@ export function createWeb3Ctx() {
 	
 			EURe: cachedStore(refreshableStore(writable<number>(0), async () => {
 				const eure = new Contract(Mainnet.gnosis.EURe, ["function balanceOf(address) returns (uint256)"], providerGnosis)
-				const balance: BigNumber = await eure.callStatic.balanceOf(backend.address.current)
+				const balance: BigNumber = await eure.callStatic.balanceOf(backend.addressGnosis.current)
 				return Number(utils.formatUnits(balance, 18))
 			})),
 	
 			sDAI: cachedStore(refreshableStore(writable<number>(0), async () => {
 				const sdai = new Contract(Mainnet.gnosis.sDAI, ["function maxRedeem(address) returns (uint256)"], providerGnosis)
-				const balance: BigNumber = await sdai.callStatic.maxRedeem(backend.address.current)
+				const balance: BigNumber = await sdai.callStatic.maxRedeem(backend.addressGnosis.current)
 				return Number(utils.formatUnits(balance, 18))
 			})),
 	
 			cUSDC: cachedStore(refreshableStore(writable<number>(0), async () => {
 				const cusdc = new Contract(Mainnet.polygon.cUSDC, ["function balanceOf(address) returns (uint256)"], providerPolygon)
-				const balance: BigNumber = await cusdc.callStatic.balanceOf(backend.address.current)
+				const balance: BigNumber = await cusdc.callStatic.balanceOf(backend.addressPolygon.current)
 				return Number(utils.formatUnits(balance, 6))
 			}))
 		},
@@ -109,48 +109,80 @@ export function createWeb3Ctx() {
 
 		interest: {
 			dai: cachedStore(refreshableStore(writable<number>(0), async () => {
-				// TODO: 
-				const ratioUsdEur: number = ctx.ratioUsdEur.current;
-				return Number(0.00) * ratioUsdEur;
+				// const sDAI = new Contract(Mainnet.gnosis.sDAI, [
+				// 	"event Deposit(address indexed sender, address indexed owner, uint256 assets, uint256 shares)",
+				// 	"event Withdraw(address indexed sender, address indexed receiver, address indexed owner, uint256 assets, uint256 shares)",
+				// 	"function balanceOf(address) returns (uint256)"
+				// ], providerPolygon);
+
+				// const balance = await sDAI.callStatic.balanceOf(backend.address.current);
+
+				// // TODO: query filter fromBlock needs to be tackled different here to ensure all events are catched even after 1000 blocks
+
+				// const eventFilterDeposit = sDAI.filters.Supply(backend.address.current);
+				// const eventsDeposit = await sDAI.queryFilter(eventFilterDeposit, -1000);
+
+				// const eventFilterWithdraw = sDAI.filters.Withdraw(backend.address.current);
+				// const eventsWithdraw = await sDAI.queryFilter(eventFilterWithdraw, -1000);
+
+				// let principal = 0;
+				// eventsDeposit.forEach((event) => {
+				// 	principal += event.args!.assets.toNumber();
+				// });
+				// eventsWithdraw.forEach((event) => {
+				// 	principal -= event.args!.amount.toNumber();
+				// });
+
+				// const interest = (balance.toNumber() - principal) / Math.pow(10, 6);
+				// const ratioUsdEur: number = ctx.ratioUsdEur.current;
+				// return interest * ratioUsdEur;
+				// const ratioUsdEur: number = ctx.ratioUsdEur.current;
+				// return Number(0.00) * ratioUsdEur;
+				return 0
 			})),
 
 			usdc: cachedStore(refreshableStore(writable<number>(0), async () => {
-				const comet = new Contract(Mainnet.polygon.cUSDC, [
-					"event Supply(address indexed from, address indexed dst, uint256 amount)",
-					"event Withdraw(address indexed src, address indexed to, uint256 amount)",
-					"function balanceOf(address) returns (uint256)"
-				], providerPolygon);
+				// const comet = new Contract(Mainnet.polygon.cUSDC, [
+				// 	"event Supply(address indexed from, address indexed dst, uint256 amount)",
+				// 	"event Withdraw(address indexed src, address indexed to, uint256 amount)",
+				// 	"function balanceOf(address) returns (uint256)"
+				// ], providerPolygon);
 
-				const balance = await comet.callStatic.balanceOf(backend.address.current);
+				// const balance = await comet.callStatic.balanceOf(backend.address.current);
 
-				// TODO: query filter fromBlock needs to be tackled different here to ensure all events are catched even after 1000 blocks
+				// // TODO: query filter fromBlock needs to be tackled different here to ensure all events are catched even after 1000 blocks
 
-				const eventFilterSupply = comet.filters.Supply(backend.address.current);
-				const eventsSupply = await comet.queryFilter(eventFilterSupply, -1000);
+				// const eventFilterSupply = comet.filters.Supply(backend.address.current);
+				// const eventsSupply = await comet.queryFilter(eventFilterSupply, -1000);
 
-				const eventFilterWithdraw = comet.filters.Withdraw(backend.address.current);
-				const eventsWithdraw = await comet.queryFilter(eventFilterWithdraw, -1000);
+				// const eventFilterWithdraw = comet.filters.Withdraw(backend.address.current);
+				// const eventsWithdraw = await comet.queryFilter(eventFilterWithdraw, -1000);
 
-				let principal = 0;
-				eventsSupply.forEach((event) => {
-					principal += event.args!.amount.toNumber();
-				});
-				eventsWithdraw.forEach((event) => {
-					principal -= event.args!.amount.toNumber();
-				});
+				// let principal = 0;
+				// eventsSupply.forEach((event) => {
+				// 	principal += event.args!.amount.toNumber();
+				// });
+				// eventsWithdraw.forEach((event) => {
+				// 	principal -= event.args!.amount.toNumber();
+				// });
 
-				const interest = (balance.toNumber() - principal) / Math.pow(10, 6);
-				const ratioUsdEur: number = ctx.ratioUsdEur.current;
-				return interest * ratioUsdEur;
+				// const interest = (balance.toNumber() - principal) / Math.pow(10, 6);
+				// const ratioUsdEur: number = ctx.ratioUsdEur.current;
+				// return interest * ratioUsdEur;
+				return 0
 			})),
 		}
 
 	}
 
-	backend.address.subscribe(addr => {
+	backend.addressGnosis.subscribe(addr => {
 		if (!addr) return
 		ctx.updateBalances()
 	})
+
+	backend.onBalanceChanged = () => {
+		ctx.updateBalances()
+	}
 
   return ctx
 }

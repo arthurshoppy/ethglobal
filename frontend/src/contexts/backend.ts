@@ -5,10 +5,20 @@ import {
   ConnectAdaptor,
   SupportedNetworks
 } from '@cometh/connect-sdk';
+import { create } from "@connext/sdk";
 import { cachedStore } from '../helpers/reactivity-helpers';
-import { type BigNumberish, Contract, utils } from "ethers"
-import {sDAIabi} from '../shared/abis/sDAIabi'
+import { type BigNumberish, Contract, utils, BigNumber } from "ethers"
 import {Mainnet} from '../shared/addresses'
+
+type BasePopuplatedTx = { to?: string, data?: string, value?: BigNumberish }
+
+function asMetaTx<T extends BasePopuplatedTx>(tx: T) {
+	return {
+		to: tx.to!,
+		data: tx.data!,
+		value: BigNumber.from(tx.value ?? "0").toHexString()
+	}
+}
 
 enum PoolToken {
   EURe,
@@ -16,160 +26,274 @@ enum PoolToken {
   USDC
 }
 
+enum Chain {
+	Gnosis = "6778479",
+	Polygon = "1886350457"
+}
+
 export function createFauxBackendCtx() {
 
-  let walletAdaptor: ConnectAdaptor;
-  let walletInstance: ComethWallet;
-  let sDAIMainnetContract = '0x83F20F44975D03b1b09e64809B757c47f942BEeA';
-  let sDAIChiadoContract = '0xaf204776c7245bF4147c2612BF6e5972Ee483701';
-  let provider: ComethProvider;
-  let localStorageAddress: any;
+  let walletGnosis: ComethWallet;
+  let providerGnosis: ComethProvider;
+	let walletPolygon: ComethWallet;
+  let providerPolygon: ComethProvider;
+
+	const byChain = (chain: Chain) => {
+		const provider = chain === Chain.Gnosis ? providerGnosis : providerPolygon
+		const wallet = chain === Chain.Gnosis ? walletGnosis : walletPolygon
+		return [wallet, provider] as const;
+	}
 
   const ctx = {
-    
-    address: cachedStore(writable<string | null>(null)),
+		onBalanceChanged: () => undefined,
+
+    addressGnosis: cachedStore(writable<string | null>(null)),
+		addressPolygon: cachedStore(writable<string | null>(null)),
     
 		async initializeWallet() {
-      walletAdaptor = new ConnectAdaptor({
-        chainId: SupportedNetworks.CHIADO,
+			// Gnosis
+      const walletAdaptorG = new ConnectAdaptor({
+        chainId: SupportedNetworks.GNOSIS,
 				apiKey: import.meta.env.VITE_COMMETH_GNOSIS,
 			});
 			
-			walletInstance = await new ComethWallet({
-        authAdapter: walletAdaptor,
+			walletGnosis = await new ComethWallet({
+        authAdapter: walletAdaptorG,
 				apiKey: import.meta.env.VITE_COMMETH_GNOSIS,
         rpcUrl: import.meta.env.VITE_RPC_GNOSIS,
 			});
 
-			provider = new ComethProvider(walletInstance);
+			providerGnosis = new ComethProvider(walletGnosis);
+
+			// Polygon
+			const walletAdaptorP = new ConnectAdaptor({
+        chainId: SupportedNetworks.POLYGON,
+				apiKey: import.meta.env.VITE_COMMETH_POLYGON,
+			});
+			
+			walletPolygon = await new ComethWallet({
+        authAdapter: walletAdaptorP,
+				apiKey: import.meta.env.VITE_COMMETH_POLYGON,
+        rpcUrl: import.meta.env.VITE_RPC_POLYGON,
+			});
+
+			providerPolygon = new ComethProvider(walletPolygon);
 		},
 
     async connectWallet() {
-      localStorageAddress = localStorage.getItem("walletAddress");
-  
-			if (localStorageAddress) {
-				await walletInstance.connect(localStorageAddress);
+      const addressGnosis = localStorage.getItem("walletAddressGnosis");
+			if (addressGnosis) {
+				await walletGnosis.connect(addressGnosis);
 			} else {
-				await walletInstance.connect();
-				localStorage.setItem("walletAddress", await walletInstance.getAddress());
+				await walletGnosis.connect();
+				localStorage.setItem("walletAddressGnosis", walletGnosis.getAddress());
 			}
-			console.log(await walletInstance.getAddress());
+			ctx.addressGnosis.set(walletGnosis.getAddress())
+			console.log("Gnosis: " + walletGnosis.getAddress());
 
+			const addressPolygon = localStorage.getItem("walletAddressPolygon");
+			if (addressPolygon) {
+				await walletPolygon.connect(addressPolygon);
+			} else {
+				await walletPolygon.connect();
+				localStorage.setItem("walletAddressPolygon", walletPolygon.getAddress());
+			}
+			ctx.addressPolygon.set(walletPolygon.getAddress())
+			console.log("Polygon: " + walletPolygon.getAddress());
     },
-    
-    async depositSDAI(amount: string) { // Input amount from frontend
-      const USER = walletInstance.getAddress();
 
-      //APPROVE 
-      const wxDAI = new Contract(Mainnet.gnosis.wxDAI, ["function approve(address, uint256)"]) // address: wallet/contract you want to approve to use funds, uint256: amount of funds you give approval
-      const sDAIapproveTx = await wxDAI.populateTransaction.approve(Mainnet.gnosis.sDAI, utils.parseUnits(amount, 18)); 
-      //DEPOSIT
-      const sDAI = new Contract(Mainnet.gnosis.sDAI, ["function deposit(uint256, address)"]) // uint256: deposit assets going in, receiver: USER address 
-      const sDAIdepositTx = await sDAI.populateTransaction.deposit(utils.parseUnits(amount, 18), USER); 
-
-      const txValues = [{
-        // approve wxDAI for sDAI
-        to: sDAIapproveTx.to!, 
-        data: sDAIapproveTx.data!, 
-        value: "0x00"
-      }, {
-        // deposit wxDAI for sDAI
-        to: sDAIdepositTx.to!, 
-        data: sDAIdepositTx.data!,
-        value: "0x00"
-      }];
-
-      const tx = await walletInstance.sendBatchTransactions(txValues);
+		async sendBatch(chain: Chain, txs: BasePopuplatedTx[]) {
+			const [wallet, provider] = byChain(chain)
+			const tx = await wallet.sendBatchTransactions(txs.map(tx => asMetaTx(tx)));
       const txPending = await provider.getTransaction(tx.safeTxHash);
-      const receipt = await txPending.wait();
-      console.log(receipt)
+      const txReceipt = await txPending.wait();
+      console.log(txReceipt)
+		},
+
+		async swapTx(tokenIn: PoolToken, tokenOut: PoolToken, amountIn: BigNumberish) {
+			const eureusdPool = new Contract(Mainnet.gnosis.eureusdCurve, [
+				"function get_dy_underlying(uint256, uint256, uint256) returns(uint256)",
+				"function exchange_underlying(uint256, uint256, uint256, uint256)"
+			], providerGnosis);
+
+			const dx = await eureusdPool.callStatic.get_dy_underlying(tokenIn, tokenOut, amountIn)
+			const slippage = 500 // 0.05%
+			const dxAfterSlippage = dx.sub(dx.div(slippage))
+			const tx = await eureusdPool.populateTransaction.exchange_underlying(tokenIn, tokenOut, amountIn, dxAfterSlippage)
+			return [tx, dxAfterSlippage] as const
+		},
+
+		async bridgeTxs(from: Chain, to: Chain, token: string, amount: BigNumberish) {
+			const txs: BasePopuplatedTx[] = []
+
+			const { sdkBase } = await create({
+				signerAddress: walletGnosis.getAddress(), // TODO: this might be the safe or gas-payer address???
+				network: "mainnet",
+				chains: {
+					6778479: { providers: ["https://rpc.gnosis.gateway.fm"] },
+					1886350457: { providers: ["https://polygon.llamarpc.com"] }
+				}
+			});
+
+			const relayerFeeBn = await sdkBase.estimateRelayerFee({
+				originDomain: from,
+				destinationDomain: to
+			})
+			const relayerFee = relayerFeeBn.add(relayerFeeBn.div(2)).toString() // increase relayer fee
+
+			const xcallParams = {
+				origin: from,           								// send from Gnosis
+				destination: to, 												// to Polygon
+				to: walletGnosis.getAddress(),				// the address that should receive the funds on destination
+				asset: token,            								// address of the token contract
+				delegate: walletGnosis.getAddress(),  // address allowed to execute transaction on destination side in addition to relayers
+				amount: amount.toString(),          		// amount of tokens to transfer
+				slippage: "400",             					// the maximum amount of slippage the user will accept in BPS (e.g. 30 = 0.3%)
+				callData: "0x",                 				// empty calldata for a simple transfer (byte-encoded)
+				relayerFee: relayerFee         					// fee paid to relayers 
+			};
+
+			const approveTxReq = await sdkBase.approveIfNeeded(
+				from,
+				token,
+				amount.toString()
+			)
+
+			if (approveTxReq) {
+				txs.push({ to: approveTxReq.to, data: approveTxReq.data?.toString() })
+			}
+
+			const xcallTxReq = await sdkBase.xcall(xcallParams);
+			xcallTxReq.gasLimit = BigNumber.from("10000000"); 
+			const gasFee = await providerGnosis.getGasPrice()
+			xcallTxReq.maxFeePerGas = gasFee.mul(2)
+			xcallTxReq.maxPriorityFeePerGas = gasFee.mul(2)
+
+			txs.push({ to: xcallTxReq.to, data: xcallTxReq.data?.toString(), value: xcallTxReq.value })
+
+			return txs
+		},
+
+		ensureTokenBalance(destinationChain: Chain, token: string, decimals = 18) {
+			// TODO: dirty, but for the prototype the best solution
+			// TODO: best solution is to use connext subgraph...
+			return new Promise<BigNumber>(r => {
+				const [wallet, provider] = byChain(destinationChain)
+				const id = setInterval(async () => {
+					const contract = new Contract(token, ["function balanceOf(address) returns(uint256)"], provider)
+					const balance: BigNumber = await contract.callStatic.balanceOf(wallet.getAddress())
+					if (balance.gte(utils.parseUnits("0.1", decimals))) { // TODO: this can probably be true in some edgecases...
+						clearInterval(id)
+						r(balance)
+					}
+				}, 10_000)
+			})
+		},
+
+    async stakeDAI(amountInEUR: string) {
+			const amountEUR = utils.parseUnits(amountInEUR, 18)
+
+			const EURe = new Contract(Mainnet.gnosis.EURe, ["function approve(address, uint256)"])
+			const approveCurve = await EURe.populateTransaction.approve(Mainnet.gnosis.eureusdCurve, amountEUR)
+
+			const [swap, amountDAI] = await ctx.swapTx(PoolToken.EURe, PoolToken.wxDAI, amountEUR)
+
+      const wxDAI = new Contract(Mainnet.gnosis.wxDAI, ["function approve(address, uint256)"])
+      const approveDAI = await wxDAI.populateTransaction.approve(Mainnet.gnosis.sDAI, amountDAI);
+
+      const sDAI = new Contract(Mainnet.gnosis.sDAI, ["function deposit(uint256, address)"])
+      const depositDAI = await sDAI.populateTransaction.deposit(amountDAI, walletGnosis.getAddress());
+
+			await ctx.sendBatch(Chain.Gnosis, [
+				approveCurve,
+				swap,
+				approveDAI,
+				depositDAI
+			])
+
+			ctx.onBalanceChanged()
     },
 
-  
-    async withdrawSDAI (amount:string) {
-      const USER = walletInstance.getAddress();
+		async unstakeDAI(amountInDAI: string) {
+			const amountDAI = utils.parseUnits(amountInDAI, 18)
 
-      const sDAI = new Contract("0xaf204776c7245bF4147c2612BF6e5972Ee483701", 
-      ["function approve(address, uint256) external returns (bool)", //USER or contract, assets, 
-      "function withdraw(uint256, address, address)"]) // withdraw: asset, receiver, owner 
-      //APPROVE & WITHDRAW 
-      const sDAIapproveTx = await sDAI.populateTransaction.approve("0xaf204776c7245bF4147c2612BF6e5972Ee483701", utils.parseUnits(amount, 18)); 
-      const sDAIwithdrawTx = await sDAI.populateTransaction.withdraw(utils.parseUnits(amount, 18), USER, USER); 
+      const sDAI = new Contract(Mainnet.gnosis.sDAI, ["function redeem(uint256, address, address)"])
+      const redeemDAI = await sDAI.populateTransaction.redeem(amountDAI, walletGnosis.getAddress());
 
-      const txValues = [{
-        to: sDAIapproveTx.to!, // approve sDAI to the sDAI  Contract
-        data: sDAIapproveTx.data!,
-        value: "0x00"
-      }, {
-        to: sDAIwithdrawTx.to!, // withdraw sDAI
-        data: sDAIwithdrawTx.data!,
-        value: "0x00"
-      }];
+			const wxDAI = new Contract(Mainnet.gnosis.wxDAI, ["function approve(address, uint256)"])
+      const approveCurve = await wxDAI.populateTransaction.approve(Mainnet.gnosis.eureusdCurve, amountDAI);
 
-      const tx = await walletInstance.sendBatchTransactions(txValues);
-      const txPending = await provider.getTransaction(tx.safeTxHash);
-      const receipt = await txPending.wait();
-      console.log(receipt)
+			const [swap] = await ctx.swapTx(PoolToken.wxDAI, PoolToken.EURe, amountDAI)
+
+			await ctx.sendBatch(Chain.Gnosis, [
+				redeemDAI,
+				approveCurve,
+				swap
+			])
+
+			ctx.onBalanceChanged()
     },
 
-    async bridgeUSDC (amount:string) {
+		async stakeUSDC(amountInEUR: string) {
+			const amountEUR = utils.parseUnits(amountInEUR, 18)
 
-  // eureusdCurve Router: "0xE3FFF29d4DC930EBb787FeCd49Ee5963DADf60b6", //Gnosis Router? 
-	// EURe: "0xcB444e90D8198415266c6a2724b7900fb12FC56E", //Gnosis
-  // GnosisUSDC: "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83"
-	// USDC.e:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
-  // cUSDCv3: "0xF25212E676D1F7F89Cd72fFEe66158f541246445", //Polygon 
-	// PolygonUSDC: "" 
+			const EURe = new Contract(Mainnet.gnosis.EURe, ["function approve(address, uint256)"])
+			const approveCurve = await EURe.populateTransaction.approve(Mainnet.gnosis.eureusdCurve, amountEUR)
 
-      const USER = walletInstance.getAddress();
-      /* Flow
-      On gnosis chain
-      Optional: The one sided flow can be done with contract to contract interactions, encode calldata and add it to the tx ?? 
-      EURe --> approve curvEUR/USDC pool at EURe contract & swap it to USDC
-      USDC --> approve Connext Contract at USDC contract & bridge transaction 
-      Await completion and arrival to 
-      Polygon POS
-      USDC --> cUSDC --> approve cUSDC at USDC contract & deposit
-      */
-      const EURe = new Contract("0xcB444e90D8198415266c6a2724b7900fb12FC56E", ["function approve(address, uint256)"]) // address: wallet/contract you want to approve to use funds, uint256: amount of funds you give approval
-      const curvePoolApprove = await EURe.populateTransaction.approve("0xE3FFF29d4DC930EBb787FeCd49Ee5963DADf60b6", utils.parseUnits(amount, 18)); 
-      
-      const curvePoolSwap = new Contract("0xE3FFF29d4DC930EBb787FeCd49Ee5963DADf60b6", ["function exchange_underlying (uin256, uin256, uin256,uin256)"]) // exchange_underlying(i: uint256, j: uint256, _dx: uint256, _min_dy: uint256, _receiver: address = msg.sender) -> uint256
-      const EUReSwapTx = await curvePoolSwap.populateTransaction.exchange_underlying("0xaf204776c7245bF4147c2612BF6e5972Ee483701", utils.parseUnits(amount, 18)); 
-      
-      const GnosisUSDC = new Contract("0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83", ["function approve(address, uint256)"]) 
-      const bridegContract = new Contract("", ["whut"]) // address: wallet/contract you want to approve to use funds, uint256: amount of funds you give approval
-      const bridgeApproveTx = await GnosisUSDC.populateTransaction.approve("0xaf204776c7245bF4147c2612BF6e5972Ee483701", utils.parseUnits(amount, 18)); 
-      const bridgeSendTx = await bridegContract.populateTransaction.whut() ; 
-      
-      const txValues = [{
-        to: curvePoolApprove.to!, // approve wxDAI for sDAI
-        data: curvePoolApprove.data!, 
-        value: "0x00"
-      }, {
-        to:EUReSwapTx.to!, // deposit wxDAI for sDAI
-        data: EUReSwapTx.data!, 
-        value: "0x00"
-      }, {
-        to:bridgeApproveTx.to!, // deposit wxDAI for sDAI
-        data: bridgeApproveTx.data!, 
-        value: "0x00"
-      }, {
-        to:bridgeSendTx.to!, // deposit wxDAI for sDAI
-        data: bridgeSendTx.data!, 
-        value: "0x00"
-      }];
+			const [swap, amountUSDC] = await ctx.swapTx(PoolToken.EURe, PoolToken.USDC, amountEUR)
 
-      const tx = await walletInstance.sendBatchTransactions(txValues);
-      const txPending = await provider.getTransaction(tx.safeTxHash);
-      const receipt = await txPending.wait();
-      console.log(receipt)
-    },
+			const bridgeTxs = await ctx.bridgeTxs(Chain.Gnosis, Chain.Polygon, Mainnet.gnosis.USDC, amountUSDC)
+			
+			await ctx.sendBatch(Chain.Gnosis, [
+				approveCurve,
+				swap,
+				...bridgeTxs
+			])
 
-    async stakecUSDC (amount: string) {
+			const amountUSDCBridged = await ctx.ensureTokenBalance(Chain.Polygon, Mainnet.polygon.USDC, 6)
 
-    }
+			const USDC = new Contract(Mainnet.polygon.USDC, ["function approve(address, uint256)"])
+			const approveComet = await USDC.populateTransaction.approve(Mainnet.polygon.cUSDC, amountUSDCBridged)
 
+			const Comet = new Contract(Mainnet.polygon.cUSDC, ["function supply(address, uint256)"]);
+			const supply = await Comet.populateTransaction.supply(Mainnet.polygon.USDC, amountUSDCBridged)
+
+			await ctx.sendBatch(Chain.Polygon, [
+				approveComet,
+				supply
+			])
+
+			ctx.onBalanceChanged()
+		},
+
+		async unstakeUSDC(amountInUSD: string) {
+			const amountUSD = utils.parseUnits(amountInUSD, 6)
+
+			const Comet = new Contract(Mainnet.polygon.cUSDC, ["function withdraw(address, uint256)"]);
+			const withdraw = await Comet.populateTransaction.withdraw(Mainnet.polygon.USDC, amountUSD)
+			
+			const bridgeTxs = await ctx.bridgeTxs(Chain.Polygon, Chain.Gnosis, Mainnet.polygon.USDC, amountUSD)
+
+      await ctx.sendBatch(Chain.Polygon, [
+				withdraw,
+				...bridgeTxs
+			])
+
+			const amountUSDCBridged = await ctx.ensureTokenBalance(Chain.Gnosis, Mainnet.gnosis.USDC, 6)
+
+			const USDC = new Contract(Mainnet.gnosis.USDC, ["function approve(address, uint256)"])
+			const approveCurve = await USDC.populateTransaction.approve(Mainnet.gnosis.eureusdCurve, amountUSDCBridged)
+		
+			const [swap] = await ctx.swapTx(PoolToken.USDC, PoolToken.EURe, amountUSDCBridged)
+
+			await ctx.sendBatch(Chain.Gnosis, [
+				approveCurve,
+				swap
+			])
+
+			ctx.onBalanceChanged()
+		}
   }
+
   return ctx
 }
