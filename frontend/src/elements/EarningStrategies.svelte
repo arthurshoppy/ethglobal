@@ -15,6 +15,8 @@
 	const sDAI = web3.balances.sDAI;
 	const cUSDC = web3.balances.cUSDC;
 
+	$: accountFunded = $balance > 0;
+
 	$: assets = [
 		{
 			icon: sdai,
@@ -49,7 +51,7 @@
 				<div slot="right" class="ml-auto self-center">
 					<Button
 						smol={true}
-						disabled={$balance == 1}
+						disabled={!accountFunded}
 						on:click={() => routing.goto(asset.route)}>Earn</Button
 					>
 				</div>
