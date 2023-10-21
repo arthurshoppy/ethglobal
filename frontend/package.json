@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@cometh/connect-sdk": "^1.1.1",
-    "@supabase/supabase-js": "^2.38.0",
+    "@connext/sdk": "^2.1.2",
     "@sveltejs/vite-plugin-svelte": "^2.4.6",
     "@tsconfig/svelte": "^5.0.2",
     "autoprefixer": "^10.4.16",
