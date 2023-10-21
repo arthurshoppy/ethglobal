@@ -9,6 +9,8 @@
 
 	const address = backend.address;
 
+	const eoa = backend.getEOA();
+
 	let keyRevealed = false;
 </script>
 
@@ -19,11 +21,20 @@
 
 	<div class="bg-white rounded-lg p-2 grid gap-2">
 		<div class="flex flex-col">
-			<span class="text-lg">Address</span>
+			<span class="text-lg">Safe Address</span>
 			<div
 				class="text-sm bg-neutral-100 hover:bg-neutral-200 rounded px-1 py-px"
 			>
 				{$address}
+			</div>
+		</div>
+
+		<div class="flex flex-col">
+			<span class="text-lg">Address</span>
+			<div
+				class="text-sm bg-neutral-100 hover:bg-neutral-200 rounded px-1 py-px"
+			>
+				{eoa.address}
 			</div>
 		</div>
 
@@ -34,7 +45,7 @@
 					class="break-words max-w-[268px] bg-neutral-100 hover:bg-neutral-200 rounded px-1 py-px"
 				>
 					{keyRevealed
-						? backend.getPrivateKey()
+						? eoa.privateKey
 						: Array(76)
 								.fill(1)
 								.map(() => "*")

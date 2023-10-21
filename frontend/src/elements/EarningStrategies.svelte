@@ -14,6 +14,8 @@
 	const balance = web3.balances.totalBalance;
 	const sDAI = web3.balances.sDAI;
 	const cUSDC = web3.balances.cUSDC;
+	const apyDAI = web3.apy.dai;
+	const apyUSDC = web3.apy.usdc;
 
 	$: accountFunded = $balance > 0;
 
@@ -21,14 +23,14 @@
 		{
 			icon: sdai,
 			title: "Savings DAI",
-			percentage: "5,00",
+			percentage: $apyDAI.toFixed(2).replace(".", ","),
 			balance: $sDAI,
 			route: "investsdai",
 		},
 		{
 			icon: usdc,
 			title: "USD Coin",
-			percentage: "4,30",
+			percentage: $apyUSDC.toFixed(2).replace(".", ","),
 			balance: $cUSDC,
 			route: "investusdc",
 		},

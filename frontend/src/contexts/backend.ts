@@ -3,7 +3,8 @@ import {
   ComethProvider,
   ComethWallet,
   ConnectAdaptor,
-  SupportedNetworks
+  SupportedNetworks,
+	type WalletConfig
 } from '@cometh/connect-sdk';
 import { create } from "@connext/sdk";
 import { cachedStore } from '../helpers/reactivity-helpers';
@@ -56,21 +57,19 @@ export function createFauxBackendCtx() {
 				apiKey: import.meta.env.VITE_COMMETH_GNOSIS,
 			});
 			
-			
 			walletGnosis = await new ComethWallet({
         authAdapter: walletAdaptorG,
 				apiKey: import.meta.env.VITE_COMMETH_GNOSIS,
-        rpcUrl: import.meta.env.VITE_RPC_GNOSIS,
-				uiConfig: { displayValidationModal: false }
+        rpcUrl: import.meta.env.VITE_RPC_GNOSIS
 			});
+			(walletGnosis! as unknown as WalletConfig).uiConfig!.displayValidationModal = false
 			
 			providerGnosis = new ComethProvider(walletGnosis);
 
 			// Polygon
 			const walletAdaptorP = new ConnectAdaptor({
         chainId: SupportedNetworks.POLYGON,
-				apiKey: import.meta.env.VITE_COMMETH_POLYGON,
-
+				apiKey: import.meta.env.VITE_COMMETH_POLYGON
 			});
 			
 			walletPolygon = await new ComethWallet({
@@ -79,6 +78,7 @@ export function createFauxBackendCtx() {
         rpcUrl: import.meta.env.VITE_RPC_POLYGON,
 				uiConfig: { displayValidationModal: false }
 			});
+			(walletPolygon! as unknown as WalletConfig).uiConfig!.displayValidationModal = false
 
 			providerPolygon = new ComethProvider(walletPolygon);
 		},
@@ -94,11 +94,13 @@ export function createFauxBackendCtx() {
 			await walletPolygon.connect(walletGnosis.getAddress());
 
 			ctx.address.set(walletGnosis.getAddress())
+
 			console.log("Address: " + walletPolygon.getAddress());
+			console.log("xDAI: " + utils.formatEther(await providerGnosis.getBalance(walletGnosis.getAddress())).toString())
     },
 
-		getPrivateKey() {
-			return (walletGnosis.authAdapter.getSigner() as Wallet).privateKey
+		getEOA() {
+			return walletGnosis.authAdapter.getSigner() as Wallet
 		},
 
 		async sendBatch(chain: Chain, txs: BasePopuplatedTx[]) {
@@ -116,7 +118,7 @@ export function createFauxBackendCtx() {
 			], providerGnosis);
 
 			const dx = await eureusdPool.callStatic.get_dy_underlying(tokenIn, tokenOut, amountIn)
-			const slippage = 500 // 0.05%
+			const slippage = 1000 // 0.1%
 			const dxAfterSlippage = dx.sub(dx.div(slippage))
 			const tx = await eureusdPool.populateTransaction.exchange_underlying(tokenIn, tokenOut, amountIn, dxAfterSlippage)
 			return [tx, dxAfterSlippage] as const
@@ -143,13 +145,13 @@ export function createFauxBackendCtx() {
 			const xcallParams = {
 				origin: from,           								// send from Gnosis
 				destination: to, 												// to Polygon
-				to: walletGnosis.getAddress(),				// the address that should receive the funds on destination
+				to: walletGnosis.getAddress(),					// the address that should receive the funds on destination
 				asset: token,            								// address of the token contract
-				delegate: walletGnosis.getAddress(),  // address allowed to execute transaction on destination side in addition to relayers
+				delegate: walletGnosis.getAddress(),  	// address allowed to execute transaction on destination side in addition to relayers
 				amount: amount.toString(),          		// amount of tokens to transfer
-				slippage: "400",             					// the maximum amount of slippage the user will accept in BPS (e.g. 30 = 0.3%)
+				slippage: "400",             						// the maximum amount of slippage the user will accept in BPS (e.g. 30 = 0.3%)
 				callData: "0x",                 				// empty calldata for a simple transfer (byte-encoded)
-				relayerFee: relayerFee         					// fee paid to relayers 
+				relayerFee: relayerFee         					// fee paid to relayers
 			};
 
 			const approveTxReq = await sdkBase.approveIfNeeded(
