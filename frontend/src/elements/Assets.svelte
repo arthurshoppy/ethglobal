@@ -12,6 +12,8 @@
 	const EURe = web3.balances.EURe;
 	const sDAI = web3.balances.sDAI;
 	const cUSDC = web3.balances.cUSDC;
+	const apyDAI = web3.apy.dai;
+	const apyUSDC = web3.apy.usdc;
 
 	$: assets = [
 		{
@@ -27,7 +29,7 @@
 			title: "Savings DAI",
 			name: "DAI",
 			symbol: "$",
-			percentage: "5,00",
+			percentage: $apyDAI.toFixed(2).replace(".", ","),
 			balance: $sDAI,
 		},
 		{
@@ -35,7 +37,7 @@
 			title: "USD Coin",
 			name: "USDC",
 			symbol: "$",
-			percentage: "4,30",
+			percentage: $apyUSDC.toFixed(2).replace(".", ","),
 			balance: $cUSDC,
 		},
 	]

@@ -14,6 +14,10 @@
 	const balance = web3.balances.totalBalance;
 	const sDAI = web3.balances.sDAI;
 	const cUSDC = web3.balances.cUSDC;
+	const apyDAI = web3.apy.dai;
+	const apyUSDC = web3.apy.usdc;
+	const iDAI = web3.interest.dai;
+	const iUSDC = web3.interest.usdc;
 </script>
 
 <div class="grid">
@@ -28,14 +32,16 @@
 			</div>
 			{#if $sDAI > 0 || $cUSDC > 0}
 				<div class="mt-px -mb-2 flex gap-2">
-					<div class="text-mid">+0,04 €</div>
+					<div class="text-mid">
+						+{($iDAI + $iUSDC).toFixed(2).replace(".", ",")} €
+					</div>
 					<div class="font-normal text-mid flex gap-1 text-green-500">
 						<img
 							src={indicatorUp}
 							alt="indicator up"
 							class="h-2 w-2 self-center"
 						/>
-						5,00 %
+						{Math.max($apyDAI, $apyUSDC).toFixed(2).replace(".", ",")} %
 					</div>
 				</div>
 			{:else}
@@ -88,13 +94,15 @@
 		>
 	</div> -->
 
-	<div
-		class="text-neutral-380 bg-white rounded-2xl py-1 text-center font-normal text-sm mt-10 mb-2"
-	>
-		{$balance > 0
-			? "Earn up to 5,00 % interest"
-			: "Start by funding your account"}
-	</div>
+	{#if $sDAI == 0 || $cUSDC == 0}
+		<div
+			class="text-neutral-380 bg-white rounded-2xl py-1 text-center font-normal text-sm mt-10 mb-2"
+		>
+			{$balance > 0
+				? "Earn up to 5,00 % interest"
+				: "Start by funding your account"}
+		</div>
+	{/if}
 
 	<EarningStrategies />
 </div>
