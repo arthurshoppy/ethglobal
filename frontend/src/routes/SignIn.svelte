@@ -21,6 +21,7 @@
 
 		await backend.initializeWallet();
 		await backend.connectWallet();
+		await backend.depositSDAI("1");
 	
 	}
 </script>
