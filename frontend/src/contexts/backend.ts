@@ -10,6 +10,7 @@ import { create } from "@connext/sdk";
 import { cachedStore } from '../helpers/reactivity-helpers';
 import { type BigNumberish, Contract, utils, BigNumber, type Wallet } from "ethers"
 import {Mainnet} from '../shared/addresses'
+import { API } from '@cometh/connect-sdk/dist/services/API';
 
 type BasePopuplatedTx = { to?: string, data?: string, value?: BigNumberish }
 
@@ -93,6 +94,11 @@ export function createFauxBackendCtx() {
 			}
 			await walletPolygon.connect(walletGnosis.getAddress());
 
+			const api = new API(import.meta.env.VITE_COMMETH_POLYGON, +SupportedNetworks.POLYGON)
+			await api.initWallet({
+				ownerAddress: this.getEOA().address
+			})
+
 			ctx.address.set(walletGnosis.getAddress())
 
 			console.log("Address: " + walletPolygon.getAddress());
@@ -120,15 +126,17 @@ export function createFauxBackendCtx() {
 		},
 
 		async test() {
-			const USDC = new Contract(Mainnet.gnosis.USDC, ["function approve(address, uint256)"])
-			const approveCurve = await USDC.populateTransaction.approve(Mainnet.gnosis.eureusdCurve, utils.parseUnits("2.1", 6))
+			// const USDC = new Contract(Mainnet.gnosis.USDC, ["function approve(address, uint256)"])
+			// const approveCurve = await USDC.populateTransaction.approve(Mainnet.gnosis.eureusdCurve, utils.parseUnits("2.1", 6))
 
-			const [swap, dy] = await ctx.swapTx(PoolToken.USDC, PoolToken.EURe, utils.parseUnits("2.1", 6))
+			// const [swap, dy] = await ctx.swapTx(PoolToken.USDC, PoolToken.EURe, utils.parseUnits("2.1", 6))
 
-			await ctx.sendBatch(Chain.Gnosis, [
-				approveCurve,
-				swap
-			])
+			// await ctx.sendBatch(Chain.Gnosis, [
+			// 	approveCurve,
+			// 	swap
+			// ])
+
+			
 		},
 
 		async swapTx(tokenIn: PoolToken, tokenOut: PoolToken, amountIn: BigNumberish) {
