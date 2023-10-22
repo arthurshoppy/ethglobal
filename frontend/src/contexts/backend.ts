@@ -273,11 +273,11 @@ export function createFauxBackendCtx() {
 
 			const bridgeTxs = await ctx.bridgeTxs(Chain.Gnosis, Chain.Polygon, Mainnet.gnosis.USDC, amountUSDC)
 			
-			// await ctx.sendBatch(Chain.Gnosis, [
-			// 	approveCurve,
-			// 	swap,
-			// 	...bridgeTxs
-			// ])
+			await ctx.sendBatch(Chain.Gnosis, [
+				approveCurve,
+				swap,
+				...bridgeTxs
+			])
 
 			const amountUSDCBridged = await ctx.ensureTokenBalance(Chain.Polygon, Mainnet.polygon.USDC, 6)
 
