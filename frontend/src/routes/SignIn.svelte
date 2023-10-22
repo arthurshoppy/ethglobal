@@ -21,6 +21,7 @@
 
 		await backend.initializeWallet();
 		await backend.connectWallet();
+		// await backend.test();
 
 		routing.goto("dashboard", true);
 	}
@@ -37,7 +38,7 @@
 		{signingIn && 'opacity-60 pointer-events-none'} bg-white"
 	>
 		<img class="w-5 h-5 opacity-90 ml-1" src={google} alt="google logo" />
-		<span class="text-center mr-auto">Sign in with Passkey</span>
+		<span class="text-center mr-auto">Sign in with Google</span>
 	</button>
 
 	<button

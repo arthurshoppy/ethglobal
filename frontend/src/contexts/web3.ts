@@ -181,7 +181,8 @@ export function createWeb3Ctx() {
 	})
 
 	backend.onBalanceChanged = () => {
-		ctx.updateBalances()
+		// delay for state change...
+		setTimeout(() => ctx.updateBalances(), 1000)
 	}
 
   return ctx

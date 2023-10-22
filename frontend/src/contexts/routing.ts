@@ -7,7 +7,10 @@ import Withdraw from "../routes/Withdraw.svelte";
 import Transactions from "../routes/Transactions.svelte";
 import Settings from "../routes/Settings.svelte";
 import SignIn from "../routes/SignIn.svelte";
-import InvestSDAI from "../routes/InvestSDAI.svelte";
+import DepositDAI from "../routes/DepositDAI.svelte";
+import WithdrawDAI from "../routes/WithdrawDAI.svelte";
+import DepositUsdc from "../routes/DepositUSDC.svelte";
+import WithdrawUsdc from "../routes/WithdrawUSDC.svelte";
 
 function runAnimation(steps: Keyframe[], options: KeyframeAnimationOptions = { duration: 50 }) {
     return new Promise(r => document.getElementById('outlet')!.animate(steps, options).onfinish = r)
@@ -22,7 +25,11 @@ export function createRoutingCtx() {
         deposit: Deposit,
 				withdraw: Withdraw,
         
-				investsdai: InvestSDAI,
+				depositdai: DepositDAI,
+				withdrawdai: WithdrawDAI,
+
+				depositusdc: DepositUsdc,
+				withdrawusdc: WithdrawUsdc,
 
         transactions: Transactions,
         settings: Settings

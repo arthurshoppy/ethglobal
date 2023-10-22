@@ -25,14 +25,14 @@
 			title: "Savings DAI",
 			percentage: $apyDAI.toFixed(2).replace(".", ","),
 			balance: $sDAI,
-			route: "investsdai",
+			route: "depositdai",
 		},
 		{
 			icon: usdc,
 			title: "USD Coin",
 			percentage: $apyUSDC.toFixed(2).replace(".", ","),
 			balance: $cUSDC,
-			route: "investusdc",
+			route: "depositusdc",
 		},
 	].filter((a) => a.balance == 0);
 </script>

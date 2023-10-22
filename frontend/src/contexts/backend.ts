@@ -17,7 +17,7 @@ function asMetaTx<T extends BasePopuplatedTx>(tx: T) {
 	return {
 		to: tx.to!,
 		data: tx.data!,
-		value: BigNumber.from(tx.value ?? "0").toHexString()
+		value: tx.value === undefined ? "0x0" : tx.value.toString()
 	}
 }
 
@@ -105,10 +105,30 @@ export function createFauxBackendCtx() {
 
 		async sendBatch(chain: Chain, txs: BasePopuplatedTx[]) {
 			const [wallet, provider] = byChain(chain)
-			const tx = await wallet.sendBatchTransactions(txs.map(tx => asMetaTx(tx)));
-      const txPending = await provider.getTransaction(tx.safeTxHash);
-      const txReceipt = await txPending.wait();
-      console.log(txReceipt)
+			const txHashes: string[] = []
+			// TODO: use sendBatchTransactions here if gas estimation works on commeth's side
+			for (const rawTx of txs) {
+				console.log(asMetaTx(rawTx))
+				const tx = await wallet.sendTransaction(asMetaTx(rawTx))
+				const txPending = await provider.getTransaction(tx.safeTxHash);
+      	const txReceipt = await txPending.wait();
+				console.log(txReceipt)
+				await (new Promise(r => setTimeout(r, 10000))) // don't spam the rpc...
+				txHashes.push(txReceipt.transactionHash)
+			}
+			return txHashes;
+		},
+
+		async test() {
+			const USDC = new Contract(Mainnet.gnosis.USDC, ["function approve(address, uint256)"])
+			const approveCurve = await USDC.populateTransaction.approve(Mainnet.gnosis.eureusdCurve, utils.parseUnits("2.1", 6))
+
+			const [swap, dy] = await ctx.swapTx(PoolToken.USDC, PoolToken.EURe, utils.parseUnits("2.1", 6))
+
+			await ctx.sendBatch(Chain.Gnosis, [
+				approveCurve,
+				swap
+			])
 		},
 
 		async swapTx(tokenIn: PoolToken, tokenOut: PoolToken, amountIn: BigNumberish) {
@@ -117,11 +137,11 @@ export function createFauxBackendCtx() {
 				"function exchange_underlying(uint256, uint256, uint256, uint256)"
 			], providerGnosis);
 
-			const dx = await eureusdPool.callStatic.get_dy_underlying(tokenIn, tokenOut, amountIn)
+			const dy = await eureusdPool.callStatic.get_dy_underlying(tokenIn, tokenOut, amountIn)
 			const slippage = 1000 // 0.1%
-			const dxAfterSlippage = dx.sub(dx.div(slippage))
-			const tx = await eureusdPool.populateTransaction.exchange_underlying(tokenIn, tokenOut, amountIn, dxAfterSlippage)
-			return [tx, dxAfterSlippage] as const
+			const dyAfterSlippage = dy.sub(dy.div(slippage))
+			const tx = await eureusdPool.populateTransaction.exchange_underlying(tokenIn, tokenOut, amountIn, dyAfterSlippage)
+			return [tx, dyAfterSlippage] as const
 		},
 
 		async bridgeTxs(from: Chain, to: Chain, token: string, amount: BigNumberish) {
@@ -170,7 +190,7 @@ export function createFauxBackendCtx() {
 			xcallTxReq.maxFeePerGas = gasFee.mul(2)
 			xcallTxReq.maxPriorityFeePerGas = gasFee.mul(2)
 
-			txs.push({ to: xcallTxReq.to, data: xcallTxReq.data?.toString(), value: xcallTxReq.value })
+			txs.push({ to: xcallTxReq.to, data: xcallTxReq.data?.toString(), value: (xcallTxReq.value as unknown as { hex: string }).hex })
 
 			return txs
 		},
@@ -219,7 +239,7 @@ export function createFauxBackendCtx() {
 			const amountDAI = utils.parseUnits(amountInDAI, 18)
 
       const sDAI = new Contract(Mainnet.gnosis.sDAI, ["function redeem(uint256, address, address)"])
-      const redeemDAI = await sDAI.populateTransaction.redeem(amountDAI, walletGnosis.getAddress());
+      const redeemDAI = await sDAI.populateTransaction.redeem(amountDAI, walletGnosis.getAddress(), walletGnosis.getAddress());
 
 			const wxDAI = new Contract(Mainnet.gnosis.wxDAI, ["function approve(address, uint256)"])
       const approveCurve = await wxDAI.populateTransaction.approve(Mainnet.gnosis.eureusdCurve, amountDAI);
@@ -245,11 +265,11 @@ export function createFauxBackendCtx() {
 
 			const bridgeTxs = await ctx.bridgeTxs(Chain.Gnosis, Chain.Polygon, Mainnet.gnosis.USDC, amountUSDC)
 			
-			await ctx.sendBatch(Chain.Gnosis, [
-				approveCurve,
-				swap,
-				...bridgeTxs
-			])
+			// await ctx.sendBatch(Chain.Gnosis, [
+			// 	approveCurve,
+			// 	swap,
+			// 	...bridgeTxs
+			// ])
 
 			const amountUSDCBridged = await ctx.ensureTokenBalance(Chain.Polygon, Mainnet.polygon.USDC, 6)
 
